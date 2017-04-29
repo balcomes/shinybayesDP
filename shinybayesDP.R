@@ -3,7 +3,7 @@ library(shiny)
 library(shinydashboard)
 library(shinythemes)
 
-ui <- dashboardPage(title="bayesDP", 
+ui <- dashboardPage(title = "bayesDP", 
   dashboardHeader(title = "bayesDP"),
   dashboardSidebar(
     tags$head(tags$style(HTML(".sidebar{height:90vh;overflow-y:auto;}"))),
@@ -14,6 +14,9 @@ ui <- dashboardPage(title="bayesDP",
     uiOutput("params")
   ),
   dashboardBody(
+    tags$style(type="text/css",
+               ".shiny-output-error { visibility: hidden; }",
+               ".shiny-output-error:before { visibility: hidden; }"),
     shinythemes::themeSelector(),
     width = "100%",
     height = "100%",
@@ -32,11 +35,11 @@ server <- function(input, output){
     params[sapply(params, is.null)] <- 100
     params <- params[-length(params)]
     params
-    })
+  })
   
   params_names <- reactive({
-      names(params())
-    })
+    names(params())
+  })
   
   output$params <- renderUI({
     lapply(params_names(),function(x){
@@ -56,8 +59,8 @@ server <- function(input, output){
   })
   
   output$discount <- renderPlot({
-      plot(final(),type="discount")
-      })
+    plot(final(),type="discount")
+  })
   
   output$posteriors <- renderPlot({
     plot(final(),type="posteriors")
