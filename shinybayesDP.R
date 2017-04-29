@@ -6,7 +6,7 @@ library(shinythemes)
 ui <- dashboardPage(title = "bayesDP", 
   dashboardHeader(title = "bayesDP"),
   dashboardSidebar(
-    tags$head(tags$style(HTML(".sidebar{height:90vh;overflow-y:auto;}"))),
+    tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
     selectInput("func", 
                 "Select Function", 
                 choices = c("bdpnormal","bdpbinomial","bdpsurvival"), 
