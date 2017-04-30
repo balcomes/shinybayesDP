@@ -7,6 +7,7 @@ ui <- dashboardPage(title = "bayesDP",
       dashboardHeader(title = "bayesDP"),
       dashboardSidebar(
         tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
+        bookmarkButton(),
         selectInput("func", 
                     "Select Function", 
                     choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"), 
@@ -25,7 +26,7 @@ ui <- dashboardPage(title = "bayesDP",
                              plotOutput("density"))),
         verbatimTextOutput("summary")))
 
-server <- function(input, output){
+server <- function(input, output, enableBookmarking = "url"){
   
   params <- reactive({
     params <- as.list(args(input$func))
