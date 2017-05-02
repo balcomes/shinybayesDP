@@ -13,21 +13,25 @@ ui <- dashboardPage(title = "bayesDP",
         #hidden(
         #  checkboxGroupInput("Check1",label=h4 ("Fish:"), choices = c("Bass","Shark","Tuna"))
         #),
+        tags$div(class = "header", checked = NA,
+                 tags$a(href = "https://cran.r-project.org/package=bayesDP", "Download package from CRAN")
+        ),
+        br(),
         uiOutput('Button'),
-        bookmarkButton(),
+        #bookmarkButton(),
         selectInput("func",
                     "Select Function",
                     choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
                     selected = "bdpnormal"),
-        uiOutput("params"),
         conditionalPanel(
           condition = "input.func == 'bdpsurvival'",
-        fileInput("file1", "Choose CSV File",
-                  accept = c(
-                    "text/csv",
-                    "text/comma-separated-values,text/plain",
-                    ".csv")
-        )),
+          fileInput("file1", "Choose CSV File",
+                    accept = c(
+                      "text/csv",
+                      "text/comma-separated-values,text/plain",
+                      ".csv")
+          )),
+        uiOutput("params"),
         HTML("<br><br><br>")
       ),
       dashboardBody(
@@ -35,13 +39,10 @@ ui <- dashboardPage(title = "bayesDP",
           tags$style(type = "text/css",
                      ".shiny-output-error { visibility: hidden; }",
                      ".shiny-output-error:before { visibility: hidden; }"),
-
           box(
             uiOutput("plottabs")
           ),
-
           box(verbatimTextOutput("summary")),
-
           tags$head(tags$style(HTML("#summary {font-size: 8px;}")))
         ),
         hr(),
@@ -50,7 +51,17 @@ ui <- dashboardPage(title = "bayesDP",
 )
 
 server <- function(input, output, enableBookmarking = "url"){
-
+  
+  firstup <- function(x) {
+    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+    x
+  }
+  
+  firstdown <- function(x) {
+    substr(x, 1, 1) <- tolower(substr(x, 1, 1))
+    x
+  }
+  
   # Two-arm trial (OPC) example
   # Simulate survival data for a two-arm trial
   time   <- c(rexp(50, rate=1/20), # Current treatment
@@ -69,13 +80,11 @@ server <- function(input, output, enableBookmarking = "url"){
   params <- reactive({
     params <- as.list(args(input$func))
     params <- params[-length(params)]
-    #print(params)
     params
   })
 
   params_names <- reactive({
     names(params())
-    #print(names(params()))
   })
 
   survdata <- reactive({
@@ -87,33 +96,36 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$params <- renderUI({
-    lapply(params_names(),function(x){
+    
+    params_names <- params_names()
+    
+    lapply(params_names,function(x){
       if(class(params()[[x]]) == "logical"){
         do.call(textInput,list(x, label = x, value = params()[[x]]))
       }
       if(class(params()[[x]]) == "numeric"){
         do.call(textInput,list(x, label = x, value = params()[[x]]))
       }
-      if(class(params()[[x]]) == "formula"){
-        do.call(textInput,
-                list(paste0(x), label = paste0(x),
-                     value = "Surv(time, status) ~ historical + treatment"))
-      }
-      if(class(params()[[x]]) == "data"){
-        do.call(textInput,list(x, label = x, value = output$contents))
-      }
       if(class(params()[[x]]) == "NULL"){
-        do.call(textInput,list(x, label = x, value = sample(1000,1)))
+        do.call(textInput,list(x, label = x, value = 100))
       }
       else{
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
+        if(input$func == "bdpsurvival"){
+          do.call(textInput,list(firstup(x), label = firstup(x), value = NULL))
+        }
+        else{
+          do.call(textInput,list(x, label = x, value = params()[[x]]))
+        }
       }
     })
   })
 
   final <- reactive({
+    
+    params_names <- params_names()
+    
     final <- c()
-    for(i in params_names()){
+    for(i in params_names){
       final <- c(final, input[[i]])
     }
 
@@ -124,7 +136,7 @@ server <- function(input, output, enableBookmarking = "url"){
                                             "(",
                                             "Surv(time, status) ~ historical + treatment,",
                                             "data = survdata(),",
-                                            "fix_alpha = TRUE",
+                                            "fix_alpha = input$Fix_alpha",
                                             ")",
                                             collapse = ",")))
         }
@@ -179,7 +191,6 @@ server <- function(input, output, enableBookmarking = "url"){
       )
     }
   })
-
   #observeEvent(input$fishButton,{toggle("Check1")})
 }
 
