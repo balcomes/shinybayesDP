@@ -46,7 +46,9 @@ ui <- dashboardPage(title = "bayesDP",
           tags$head(tags$style(HTML("#summary {font-size: 8px;}")))
         ),
         hr(),
-        dataTableOutput("contents")
+        conditionalPanel(
+          condition = "input.func == 'bdpsurvival'",
+          dataTableOutput("contents"))
       )
 )
 
