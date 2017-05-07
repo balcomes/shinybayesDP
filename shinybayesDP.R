@@ -31,6 +31,7 @@ ui <- dashboardPage(title = "bayesDP",
                       "text/comma-separated-values,text/plain",
                       ".csv")
           )),
+        uiOutput("colchoose"),
         uiOutput("params"),
         HTML("<br><br><br>")
       ),
@@ -95,6 +96,23 @@ server <- function(input, output, enableBookmarking = "url"){
       return(NULL)
     }
     read.csv(inFile$datapath,header=TRUE)
+  })
+  
+  output$colchoose <- renderUI({
+    
+    survcols <- c("status", "time", "historical", "treatment")
+    
+    survdata <- survdata()
+    survnames <- names(survdata)
+    
+    lapply(survcols,function(x){
+      do.call(
+        selectInput,list(x,
+                    paste0("Select ",x),
+                    choices = survnames,
+                    selected = survnames[1])
+      )
+    })
   })
 
   output$params <- renderUI({
@@ -177,6 +195,8 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$contents <- renderDataTable({survdata()})
+  
+  
 
   output$plottabs <- renderUI({
     if(input$func == "bdpsurvival"){
