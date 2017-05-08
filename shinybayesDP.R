@@ -9,16 +9,10 @@ ui <- dashboardPage(title = "bayesDP",
       dashboardSidebar(
         shinyjs::useShinyjs(),
         tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
-        #hidden(
-        #  checkboxGroupInput("Check1",label=h4 ("Fish:"), choices = c("Bass","Shark","Tuna"))
-        #),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://cran.r-project.org/package=bayesDP",
-                        "Download package from CRAN")
-        ),
+                        "View help files and download the package from CRAN")),
         br(),
-        #uiOutput('Button'),
-        #bookmarkButton(),
         selectInput("func",
                     "Select Function",
                     choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
@@ -27,13 +21,16 @@ ui <- dashboardPage(title = "bayesDP",
           condition = "input.func == 'bdpsurvival'",
           actionButton("example_button", label = "Use Example Data"),
           tags$style(type='text/css', "button#example_button { margin-left: 12px; }"),
-          fileInput("file1", "Choose CSV File",
+          fileInput("file1", "Upload .csv File",
                     accept = c(
                       "text/csv",
                       "text/comma-separated-values,text/plain",
                       ".csv")
           ),
-        uiOutput("colchoose")),
+        uiOutput("colchoose"),
+        textInput("Formula",
+                  label = "Formula",
+                  value = "Surv(time, status) ~ historical + treatment")),
         uiOutput("params"),
         HTML("<br><br><br>")
       ),
@@ -124,7 +121,6 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$params <- renderUI({
-    
     if(input$func == "bdpsurvival"){
       lapply(params_names()[c(-1,-2)],function(x){
         if(class(params()[[x]]) == "logical"){
@@ -143,15 +139,18 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     else{
       lapply(params_names(),function(x){
-      if(class(params()[[x]]) == "logical"){
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
-      }
-      if(class(params()[[x]]) == "numeric"){
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
-      }
-      if(class(params()[[x]]) == "NULL"){
-        do.call(textInput,list(x, label = x, value = 100))
-      }
+        if(class(params()[[x]]) == "logical"){
+          do.call(textInput,list(x, label = x, value = params()[[x]]))
+        }
+        if(class(params()[[x]]) == "numeric"){
+          do.call(textInput,list(x, label = x, value = params()[[x]]))
+        }
+        if(class(params()[[x]]) == "NULL"){
+          do.call(textInput,list(x, label = x, value = 100))
+        }
+        else{
+          do.call(textInput,list(x, label = x, value = params()[[x]]))
+        }
       })
     }
   })
@@ -168,18 +167,17 @@ server <- function(input, output, enableBookmarking = "url"){
          length(input$time) > 0 &&
          length(input$historical) > 0 &&
          length(input$treatment) > 0){
+        
         final <- eval(parse(text = paste0("bdpsurvival",
                                           "(",
-                                          "Surv(time, status) ~ historical + treatment,",
+                                          "formula = ",
+                                          input$Formula,
+                                          ",",
                                           "data = survchosen(),",
-                                          "fix_alpha = input$fix_alpha",
+                                          paste0(final,collapse = ","),
                                           ")",
                                           collapse = ",")))
       }
-          #else{
-          #  final <- bdpsurvival(Surv(time, status) ~ historical + treatment,
-          #                       data = example_surv_2arm)
-          #}
       else{
         final <- eval(parse(text = paste0(input$func,"(",
                                           paste0(final,collapse = ",")
