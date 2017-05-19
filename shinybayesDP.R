@@ -28,13 +28,12 @@ ui <- dashboardPage(title = "bayesDP",
         
         hr(),
         
-        tags$style(type='text/css', "button#example_button { margin-left: 12px; }"),
-        actionButton("example_button", label = "Use Example Data"),
-        fileInput("file1", "Upload .csv File",
-                  accept = c(
-                    "text/csv",
-                    "text/comma-separated-values,text/plain",
-                    ".csv")),
+        conditionalPanel(
+          condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
+          uiOutput("btag"),
+          uiOutput("ex"),
+          uiOutput("up")
+        ),
         hr(),
         
         conditionalPanel(
@@ -54,10 +53,7 @@ ui <- dashboardPage(title = "bayesDP",
                      ".shiny-output-error { visibility: hidden; }",
                      ".shiny-output-error:before { visibility: hidden; }"),
           box(width = "100%", uiOutput("plottabs"))),
-        hr(),
-        conditionalPanel(
-          condition = "input.func == 'bdpsurvival'",
-          dataTableOutput("contents"))
+        hr()
       )
 )
 
@@ -259,7 +255,8 @@ server <- function(input, output, enableBookmarking = "url"){
         tabPanel("summary", verbatimTextOutput("summary")),
         tabPanel("discount", plotOutput("discount")),
         tabPanel("survival", plotOutput("survival")),
-        tabPanel("help", uiOutput("vig"))
+        tabPanel("help", uiOutput("vig")),
+        tabPanel("contents", dataTableOutput("contents"))
       )
     }
     else{
@@ -310,6 +307,27 @@ server <- function(input, output, enableBookmarking = "url"){
     mdout
   })
   
+  output$btag <- renderUI({
+    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+      tags$style(type='text/css', "button#example_button { margin-left: 12px; }")
+    }
+  })
+      
+  output$ex <- renderUI({  
+    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+      actionButton("example_button", label = "Use Example Data")
+    }
+  })
+      
+  output$up <- renderUI({
+    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+      fileInput("file1", "Upload .csv File",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv"))
+    }
+  })
 }
 
 shinyApp(ui, server)
