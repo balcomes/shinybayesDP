@@ -14,35 +14,36 @@ ui <- dashboardPage(title = "bayesDP",
                         "View help files and download the package from CRAN")),
         br(),
         
+        conditionalPanel(
+          condition = "input.funccheck == FALSE",
+          uiOutput("funcdrop")),
+        
         checkboxInput("funccheck", "Use your own function"),
+        hr(),
         textInput("anyfunc","Write in your function name"),
         
         conditionalPanel(
-          condition = "input.funccheck == FALSE",
-          selectInput("func",
-                      "Select Function",
-                      choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
-                      selected = "bdpnormal")),
-        
-        conditionalPanel(
           condition = "input.funccheck == TRUE",
-          checkboxInput("formulacheck","formulacheck"),
-          checkboxInput("datacheck","datacheck"),
-          tags$style(type='text/css', "button#example_button { margin-left: 12px; }"),
-          actionButton("example_button", label = "Use Example Data"),
-          fileInput("file1", "Upload .csv File",
-                    accept = c(
-                      "text/csv",
-                      "text/comma-separated-values,text/plain",
-                      ".csv")
-          )),
+          uiOutput("checks")),
+        
+        hr(),
+        
+        tags$style(type='text/css', "button#example_button { margin-left: 12px; }"),
+        actionButton("example_button", label = "Use Example Data"),
+        fileInput("file1", "Upload .csv File",
+                  accept = c(
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    ".csv")),
+        hr(),
         
         conditionalPanel(
           condition = "input.func == 'bdpsurvival'",
           uiOutput("colchoose"),
           textInput("Formula",
                     label = "Formula",
-                    value = "Surv(time, status) ~ historical + treatment")),
+                    value = "Surv(time, status) ~ historical + treatment"),
+          hr()),
         
         uiOutput("params"),
         HTML("<br><br><br>")
@@ -275,6 +276,25 @@ server <- function(input, output, enableBookmarking = "url"){
   
   observeEvent(input$funccheck, {
     toggle("anyfunc")  # toggle is a shinyjs function
+  })
+  
+  output$checks <- renderUI({
+    if(input$funccheck == TRUE){
+      checkboxGroupInput("checks", "Customize Arguments:",
+                         choiceNames =
+                           list("formulacheck", "datacheck"),
+                         choiceValues =
+                           list("formulacheck", "datacheck"))
+    }
+  })
+  
+  output$funcdrop <- renderUI({
+    if(input$funccheck == FALSE){
+      selectInput("func",
+                  "Select Function",
+                  choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
+                  selected = "bdpnormal")
+    }
   })
   
   output$vig <- renderUI({
