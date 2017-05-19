@@ -7,30 +7,43 @@ library(shinyjs)
 ui <- dashboardPage(title = "bayesDP",
       dashboardHeader(title = "bayesDP"),
       dashboardSidebar(
-        shinyjs::useShinyjs(),
+        useShinyjs(),
         tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://cran.r-project.org/package=bayesDP",
                         "View help files and download the package from CRAN")),
         br(),
-        selectInput("func",
-                    "Select Function",
-                    choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
-                    selected = "bdpnormal"),
+        
+        checkboxInput("funccheck", "Use your own function"),
+        textInput("anyfunc","Write in your function name"),
+        
         conditionalPanel(
-          condition = "input.func == 'bdpsurvival'",
-          actionButton("example_button", label = "Use Example Data"),
+          condition = "input.funccheck == FALSE",
+          selectInput("func",
+                      "Select Function",
+                      choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
+                      selected = "bdpnormal")),
+        
+        conditionalPanel(
+          condition = "input.funccheck == TRUE",
+          checkboxInput("formulacheck","formulacheck"),
+          checkboxInput("datacheck","datacheck"),
           tags$style(type='text/css', "button#example_button { margin-left: 12px; }"),
+          actionButton("example_button", label = "Use Example Data"),
           fileInput("file1", "Upload .csv File",
                     accept = c(
                       "text/csv",
                       "text/comma-separated-values,text/plain",
                       ".csv")
-          ),
-        uiOutput("colchoose"),
-        textInput("Formula",
-                  label = "Formula",
-                  value = "Surv(time, status) ~ historical + treatment")),
+          )),
+        
+        conditionalPanel(
+          condition = "input.func == 'bdpsurvival'",
+          uiOutput("colchoose"),
+          textInput("Formula",
+                    label = "Formula",
+                    value = "Surv(time, status) ~ historical + treatment")),
+        
         uiOutput("params"),
         HTML("<br><br><br>")
       ),
@@ -39,11 +52,11 @@ ui <- dashboardPage(title = "bayesDP",
           tags$style(type = "text/css",
                      ".shiny-output-error { visibility: hidden; }",
                      ".shiny-output-error:before { visibility: hidden; }"),
-          box(
+          box(width = "100%",
             uiOutput("plottabs")
-          ),
-          box(verbatimTextOutput("summary")),
-          tags$head(tags$style(HTML("#summary {font-size: 8px;}")))
+          )#,
+          #box(verbatimTextOutput("summary")),
+          #tags$head(tags$style(HTML("#summary {font-size: 8px;}")))
         ),
         hr(),
         conditionalPanel(
@@ -55,7 +68,13 @@ ui <- dashboardPage(title = "bayesDP",
 server <- function(input, output, enableBookmarking = "url"){
   
   params <- reactive({
-    params <- as.list(args(input$func))
+    
+    if(input$funccheck == TRUE){
+      params <- as.list(args(input$anyfunc))
+    }
+    else{
+      params <- as.list(args(input$func))
+    }
     params <- params[-length(params)]
     params
   })
@@ -64,36 +83,36 @@ server <- function(input, output, enableBookmarking = "url"){
     names(params())
   })
   
-  survdata <- reactiveValues(x = NULL)
+  updata <- reactiveValues(x = NULL)
   
   observe({
-  input$example_button
-  # Two-arm trial (OPC) example
-  # Simulate survival data for a two-arm trial
-  time   <- c(rexp(50, rate=1/20), # Current treatment
-              rexp(50, rate=1/10), # Current control
-              rexp(50, rate=1/30), # Historical treatment
-              rexp(50, rate=1/5))  # Historical control
-  status <- rexp(200, rate=1/40)
-  status <- ifelse(time < status, 1, 0)
-  
-  # Collect data into a dataframe
-  survdata$x <- data.frame(status     = status,
-             time       = time,
-             historical = c(rep(0,100),rep(1,100)),
-             treatment  = c(rep(1,50),
-                            rep(0,50),
-                            rep(1,50),
-                            rep(0,50)))
+    input$example_button
+    # Two-arm trial (OPC) example
+    # Simulate survival data for a two-arm trial
+    time   <- c(rexp(50, rate=1/20), # Current treatment
+                rexp(50, rate=1/10), # Current control
+                rexp(50, rate=1/30), # Historical treatment
+                rexp(50, rate=1/5))  # Historical control
+    status <- rexp(200, rate=1/40)
+    status <- ifelse(time < status, 1, 0)
+    
+    # Collect data into a dataframe
+    updata$x <- data.frame(status     = status,
+               time       = time,
+               historical = c(rep(0,100),rep(1,100)),
+               treatment  = c(rep(1,50),
+                              rep(0,50),
+                              rep(1,50),
+                              rep(0,50)))
   })
   
   observe({
     inFile <- input$file1
     if (is.null(inFile)){
-      survdata$x <- NULL
+      updata$x <- NULL
     }
     else{
-      survdata$x <- read.csv(inFile$datapath,header=TRUE)
+      updata$x <- read.csv(inFile$datapath,header=TRUE)
     }
   })
 
@@ -101,7 +120,7 @@ server <- function(input, output, enableBookmarking = "url"){
     
     survcols <- c("status", "time", "historical", "treatment")
 
-    survnames <- names(survdata$x)
+    survnames <- names(updata$x)
     
     lapply(survcols,function(x){
       do.call(
@@ -114,45 +133,46 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   survchosen <- reactive({
-    data.frame(status     = survdata$x[[input$status]],
-               time       = survdata$x[[input$time]],
-               historical = survdata$x[[input$historical]],
-               treatment  = survdata$x[[input$treatment]])
+    data.frame(status     = updata$x[[input$status]],
+               time       = updata$x[[input$time]],
+               historical = updata$x[[input$historical]],
+               treatment  = updata$x[[input$treatment]])
   })
 
   output$params <- renderUI({
-    if(input$func == "bdpsurvival"){
-      lapply(params_names()[c(-1,-2)],function(x){
-        if(class(params()[[x]]) == "logical"){
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-        if(class(params()[[x]]) == "numeric"){
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-        if(class(params()[[x]]) == "NULL"){
-          do.call(textInput,list(x, label = x, value = 100))
-        }
-        else{
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-      })
+    
+    if(input$funccheck == FALSE){
+      if(input$func == "bdpsurvival"){
+        omit <- c("formula", "data")
+      }
+      else{
+        omit <- c()
+      }
     }
     else{
-      lapply(params_names(),function(x){
-        if(class(params()[[x]]) == "logical"){
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-        if(class(params()[[x]]) == "numeric"){
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-        if(class(params()[[x]]) == "NULL"){
-          do.call(textInput,list(x, label = x, value = 100))
-        }
-        else{
-          do.call(textInput,list(x, label = x, value = params()[[x]]))
-        }
-      })
+      omit <- c()
+      if(input$formulacheck == TRUE){
+        omit <- c(omit, "formula")
+      }
+      if(input$formulacheck == TRUE){
+        omit <- c(omit, "data")
+      }
     }
+      
+    lapply(setdiff(params_names(),omit),function(x){
+      if(class(params()[[x]]) == "logical"){
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+      if(class(params()[[x]]) == "numeric"){
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+      if(class(params()[[x]]) == "NULL"){
+        do.call(textInput,list(x, label = x, value = 100))
+      }
+      else{
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+    })
   })
 
   final <- reactive({
@@ -161,29 +181,55 @@ server <- function(input, output, enableBookmarking = "url"){
     for(i in params_names()){
       final <- c(final, input[[i]])
     }
-    if(length(final > 0 && length(input$func) > 0 && length(survchosen()) > 0)){
-      if(input$func == "bdpsurvival" &&
-         length(input$status) > 0 &&
-         length(input$time) > 0 &&
-         length(input$historical) > 0 &&
-         length(input$treatment) > 0){
+    
+    if(input$funccheck == TRUE){
+      
+      if(input$formulacheck == TRUE){
         
-        final <- eval(parse(text = paste0("bdpsurvival",
-                                          "(",
-                                          "formula = ",
-                                          input$Formula,
-                                          ",",
-                                          "data = survchosen(),",
-                                          paste0(final,collapse = ","),
-                                          ")",
-                                          collapse = ",")))
       }
-      else{
-        final <- eval(parse(text = paste0(input$func,"(",
-                                          paste0(final,collapse = ",")
-                                          ,")")))
+      
+      if(input$datacheck == TRUE){
+        
       }
+      
+      final <- eval(parse(text = paste0(input$anyfunc,
+                                        "(",
+                                        "formula = ",
+                                        input$Formula,
+                                        ",",
+                                        "data = updata$x,",
+                                        paste0(final,collapse = ","),
+                                        ")",
+                                        collapse = ",")))
+      
+    }
+    if(input$funccheck == FALSE){
+      if(length(final > 0)){
+        if(input$func == "bdpsurvival" &&
+           length(input$status) > 0 &&
+           length(input$time) > 0 &&
+           length(input$historical) > 0 &&
+           length(input$treatment) > 0 &&
+           length(input$func) > 0 &&
+           length(survchosen()) > 0){
+          
+          final <- eval(parse(text = paste0(input$func,
+                                            "(",
+                                            "formula = ",
+                                            input$Formula,
+                                            ",",
+                                            "data = survchosen(),",
+                                            paste0(final,collapse = ","),
+                                            ")",
+                                            collapse = ",")))
+        }
+        if(input$func %in% c("bdpnormal","bdpbinomial")){
+          final <- eval(parse(text = paste0(input$func,"(",
+                                            paste0(final,collapse = ",")
+                                            ,")")))
+        }
       }
+    }
     final
   })
 
@@ -203,24 +249,40 @@ server <- function(input, output, enableBookmarking = "url"){
   output$summary <- renderPrint({
     summary(final())
   })
-
-  output$contents <- renderDataTable({survdata$x})
+  
+  output$print <- renderPrint({
+    print(final())
+  })
+  
+  output$contents <- renderDataTable({updata$x})
   
   output$plottabs <- renderUI({
     if(input$func == "bdpsurvival"){
       tabsetPanel(
+        tabPanel("print", verbatimTextOutput("print")),
+        tabPanel("summary", verbatimTextOutput("summary")),
         tabPanel("discount", plotOutput("discount")),
         tabPanel("survival", plotOutput("survival"))
       )
     }
     else{
       tabsetPanel(
+        tabPanel("print", verbatimTextOutput("print")),
+        tabPanel("summary", verbatimTextOutput("summary")),
         tabPanel("discount", plotOutput("discount")),
         tabPanel("posteriors", plotOutput("posteriors")),
-        tabPanel("density", plotOutput("density"))
+        tabPanel("density", plotOutput("density"))#,
+        #tabPanel("help", uiOutput("vig"))
       )
     }
   })
+  
+  observeEvent(input$funccheck, {
+    toggle("anyfunc")  # toggle is a shinyjs function
+  })
+  
+  output$vig <- renderUI(tags$iframe(width="100%",{includeHTML(system.file("doc", "bdpnormal-vignette.html", package="bayesDP"))}))
+  
 }
 
 shinyApp(ui, server)
