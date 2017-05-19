@@ -52,12 +52,7 @@ ui <- dashboardPage(title = "bayesDP",
           tags$style(type = "text/css",
                      ".shiny-output-error { visibility: hidden; }",
                      ".shiny-output-error:before { visibility: hidden; }"),
-          box(width = "100%",
-            uiOutput("plottabs")
-          )#,
-          #box(verbatimTextOutput("summary")),
-          #tags$head(tags$style(HTML("#summary {font-size: 8px;}")))
-        ),
+          box(width = "100%", uiOutput("plottabs"))),
         hr(),
         conditionalPanel(
           condition = "input.func == 'bdpsurvival'",
@@ -262,7 +257,8 @@ server <- function(input, output, enableBookmarking = "url"){
         tabPanel("print", verbatimTextOutput("print")),
         tabPanel("summary", verbatimTextOutput("summary")),
         tabPanel("discount", plotOutput("discount")),
-        tabPanel("survival", plotOutput("survival"))
+        tabPanel("survival", plotOutput("survival")),
+        tabPanel("help", uiOutput("vig"))
       )
     }
     else{
@@ -271,8 +267,8 @@ server <- function(input, output, enableBookmarking = "url"){
         tabPanel("summary", verbatimTextOutput("summary")),
         tabPanel("discount", plotOutput("discount")),
         tabPanel("posteriors", plotOutput("posteriors")),
-        tabPanel("density", plotOutput("density"))#,
-        #tabPanel("help", uiOutput("vig"))
+        tabPanel("density", plotOutput("density")),
+        tabPanel("help", uiOutput("vig"))
       )
     }
   })
@@ -281,7 +277,18 @@ server <- function(input, output, enableBookmarking = "url"){
     toggle("anyfunc")  # toggle is a shinyjs function
   })
   
-  output$vig <- renderUI(tags$iframe(width="100%",{includeHTML(system.file("doc", "bdpnormal-vignette.html", package="bayesDP"))}))
+  output$vig <- renderUI({
+    if(input$func == "bdpnormal"){
+      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpnormal-vignette.Rmd", package="bayesDP")))
+    }
+    if(input$func == "bdpbinomial"){
+      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpbinomial-vignette.Rmd", package="bayesDP")))
+    }
+    if(input$func == "bdpsurvival"){
+      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpsurvival-vignette.Rmd", package="bayesDP")))
+    }
+    mdout
+  })
   
 }
 
