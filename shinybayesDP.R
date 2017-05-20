@@ -16,35 +16,30 @@ ui <- dashboardPage(title = "bayesDP",
         
         conditionalPanel(
           condition = "input.funccheck == FALSE",
+          uiOutput("writeformula"),
           uiOutput("funcdrop")),
         
+        conditionalPanel(
+          condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
+          menuItem("Data", icon = icon("bar-chart-o"),
+          uiOutput("btag"),
+          uiOutput("ex"),
+          uiOutput("up"))),
+        
+        conditionalPanel(
+          condition = "input.func == 'bdpsurvival'",
+          menuItem("Column Select", icon = icon("bar-chart-o"),
+          uiOutput("colchoose"))),
+        
+        menuItem("Inputs", icon = icon("bar-chart-o"), uiOutput("params")),
+        
         checkboxInput("funccheck", "Use your own function"),
-        hr(),
         textInput("anyfunc","Write in your function name"),
         
         conditionalPanel(
           condition = "input.funccheck == TRUE",
           uiOutput("checks")),
         
-        hr(),
-        
-        conditionalPanel(
-          condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
-          uiOutput("btag"),
-          uiOutput("ex"),
-          uiOutput("up")
-        ),
-        hr(),
-        
-        conditionalPanel(
-          condition = "input.func == 'bdpsurvival'",
-          uiOutput("colchoose"),
-          textInput("Formula",
-                    label = "Formula",
-                    value = "Surv(time, status) ~ historical + treatment"),
-          hr()),
-        
-        uiOutput("params"),
         HTML("<br><br><br>")
       ),
       dashboardBody(
@@ -108,22 +103,6 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
 
-  output$colchoose <- renderUI({
-    
-    survcols <- c("status", "time", "historical", "treatment")
-
-    survnames <- names(updata$x)
-    
-    lapply(survcols,function(x){
-      do.call(
-        selectInput,list(x,
-                    paste0("Select ",x),
-                    choices = survnames,
-                    selected = x)
-      )
-    })
-  })
-  
   survchosen <- reactive({
     data.frame(status     = updata$x[[input$status]],
                time       = updata$x[[input$time]],
@@ -256,7 +235,7 @@ server <- function(input, output, enableBookmarking = "url"){
         tabPanel("discount", plotOutput("discount")),
         tabPanel("survival", plotOutput("survival")),
         tabPanel("help", uiOutput("vig")),
-        tabPanel("contents", dataTableOutput("contents"))
+        tabPanel("data", dataTableOutput("contents"))
       )
     }
     else{
@@ -271,9 +250,9 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  observeEvent(input$funccheck, {
-    toggle("anyfunc")  # toggle is a shinyjs function
-  })
+  #observeEvent(input$funccheck, {
+  #  toggle("anyfunc")  # toggle is a shinyjs function
+  #})
   
   output$checks <- renderUI({
     if(input$funccheck == TRUE){
@@ -328,6 +307,34 @@ server <- function(input, output, enableBookmarking = "url"){
                   ".csv"))
     }
   })
+  
+  output$writeformula <- renderUI({
+    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+      menuItem("Formula", icon = icon("bar-chart-o"), 
+               textInput("Formula",
+                         label = "Formula",
+                         value = "Surv(time, status) ~ historical + treatment"))
+    }
+  })
+  
+  output$colchoose <- renderUI({
+    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+      survcols <- c("status", "time", "historical", "treatment")
+      
+      survnames <- names(updata$x)
+      
+      out <- lapply(survcols,function(x){
+        do.call(
+          selectInput,list(x,
+                           paste0("Select ",x),
+                           choices = survnames,
+                           selected = x)
+        )
+      })
+      out
+    }
+  })
+  
 }
 
 shinyApp(ui, server)
