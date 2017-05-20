@@ -2,12 +2,12 @@ library(bayesDP)
 library(shiny)
 library(shinydashboard)
 library(shinythemes)
-library(shinyjs)
+#library(shinyjs)
 
 ui <- dashboardPage(title = "bayesDP",
       dashboardHeader(title = "bayesDP"),
       dashboardSidebar(
-        useShinyjs(),
+        #useShinyjs(),
         tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://cran.r-project.org/package=bayesDP",
