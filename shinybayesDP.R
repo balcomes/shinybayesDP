@@ -13,9 +13,10 @@ ui <- function(request) {
       tags$div(class = "header", checked = NA,
                tags$a(href = "https://cran.r-project.org/package=bayesDP",
                       "View help files and download the package from CRAN")),
+      
       br(),
-
       bookmarkButton(),
+      br(),
       
       conditionalPanel(
         condition = "input.funccheck == FALSE",
