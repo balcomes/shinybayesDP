@@ -4,53 +4,57 @@ library(shinydashboard)
 library(shinythemes)
 #library(shinyjs)
 
-ui <- dashboardPage(title = "bayesDP",
-      dashboardHeader(title = "bayesDP"),
-      dashboardSidebar(
-        #useShinyjs(),
-        tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
-        tags$div(class = "header", checked = NA,
-                 tags$a(href = "https://cran.r-project.org/package=bayesDP",
-                        "View help files and download the package from CRAN")),
-        br(),
-        
-        conditionalPanel(
-          condition = "input.funccheck == FALSE",
-          uiOutput("writeformula"),
-          uiOutput("funcdrop")),
-        
-        conditionalPanel(
-          condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
-          menuItem("Data", icon = icon("bar-chart-o"),
-          uiOutput("btag"),
-          uiOutput("ex"),
-          uiOutput("up"))),
-        
-        conditionalPanel(
-          condition = "input.func == 'bdpsurvival'",
-          menuItem("Column Select", icon = icon("bar-chart-o"),
-          uiOutput("colchoose"))),
-        
-        menuItem("Inputs", icon = icon("bar-chart-o"), uiOutput("params")),
-        
-        checkboxInput("funccheck", "Use your own function"),
-        textInput("anyfunc","Write in your function name"),
-        
-        conditionalPanel(
-          condition = "input.funccheck == TRUE",
-          uiOutput("checks")),
-        
-        HTML("<br><br><br>")
-      ),
-      dashboardBody(
-        fluidPage(
-          tags$style(type = "text/css",
-                     ".shiny-output-error { visibility: hidden; }",
-                     ".shiny-output-error:before { visibility: hidden; }"),
-          box(width = "100%", uiOutput("plottabs"))),
-        hr()
-      )
-)
+ui <- function(request) {
+  dashboardPage(title = "bayesDP",
+    dashboardHeader(title = "bayesDP"),
+    dashboardSidebar(
+      #useShinyjs(),
+      tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
+      tags$div(class = "header", checked = NA,
+               tags$a(href = "https://cran.r-project.org/package=bayesDP",
+                      "View help files and download the package from CRAN")),
+      br(),
+
+      bookmarkButton(),
+      
+      conditionalPanel(
+        condition = "input.funccheck == FALSE",
+        uiOutput("writeformula"),
+        uiOutput("funcdrop")),
+      
+      conditionalPanel(
+        condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
+        menuItem("Data", icon = icon("table"),
+                 uiOutput("btag"),
+                 uiOutput("ex"),
+                 uiOutput("up"))),
+      
+      conditionalPanel(
+        condition = "input.func == 'bdpsurvival'",
+        menuItem("Column Select", icon = icon("columns"),
+                 uiOutput("colchoose"))),
+      
+      menuItem("Inputs", icon = icon("tasks"), uiOutput("params")),
+      
+      checkboxInput("funccheck", "Use your own function"),
+      textInput("anyfunc","Write in your function name"),
+      
+      conditionalPanel(
+        condition = "input.funccheck == TRUE",
+        uiOutput("checks")),
+      
+      HTML("<br><br><br>")
+    ),
+    dashboardBody(
+      fluidPage(
+        tags$style(type = "text/css",
+                   ".shiny-output-error { visibility: hidden; }",
+                   ".shiny-output-error:before { visibility: hidden; }"),
+        box(width = "100%", uiOutput("plottabs"))),
+      hr()
+    )
+  )
+}
 
 server <- function(input, output, enableBookmarking = "url"){
   
@@ -337,4 +341,4 @@ server <- function(input, output, enableBookmarking = "url"){
   
 }
 
-shinyApp(ui, server)
+shinyApp(ui, server, enableBookmarking = "url")
