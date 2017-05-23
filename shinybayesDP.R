@@ -2,13 +2,11 @@ library(bayesDP)
 library(shiny)
 library(shinydashboard)
 library(shinythemes)
-#library(shinyjs)
 
 ui <- function(request) {
   dashboardPage(title = "bayesDP",
     dashboardHeader(title = "bayesDP"),
     dashboardSidebar(
-      #useShinyjs(),
       tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
       tags$div(class = "header", checked = NA,
                tags$a(href = "https://cran.r-project.org/package=bayesDP",
@@ -17,32 +15,43 @@ ui <- function(request) {
       br(),
       bookmarkButton(),
       br(),
+      downloadButton("report", "Generate report"),
+      br(),
       
       conditionalPanel(
         condition = "input.funccheck == FALSE",
-        uiOutput("writeformula"),
         uiOutput("funcdrop")),
       
       conditionalPanel(
-        condition = "input.func == 'bdpsurvival' || input.funccheck == TRUE",
+        condition = "input.func == 'bdpsurvival' || input.funccheck == FALSE",
         menuItem("Data", icon = icon("table"),
                  uiOutput("btag"),
                  uiOutput("ex"),
                  uiOutput("up"))),
       
       conditionalPanel(
-        condition = "input.func == 'bdpsurvival'",
-        menuItem("Column Select", icon = icon("columns"),
-                 uiOutput("colchoose"))),
-      
-      menuItem("Inputs", icon = icon("tasks"), uiOutput("params")),
-      
-      checkboxInput("funccheck", "Use your own function"),
-      textInput("anyfunc","Write in your function name"),
+        condition = "input.formulacheck == TRUE",
+        uiOutput("writeformula")),
       
       conditionalPanel(
-        condition = "input.funccheck == TRUE",
-        uiOutput("checks")),
+        condition = "input.func == 'bdpsurvival' && input.funccheck == FALSE",
+        menuItem("Column Select",
+                 icon = icon("columns"),
+                 uiOutput("colchoose"))),
+      
+      menuItem("Inputs",
+               icon = icon("tasks"),
+               uiOutput("params")),
+      
+      menuItem("Dev Tool",
+               icon = icon("key"),
+      
+        checkboxInput("funccheck", "Use your own function"),
+        
+        conditionalPanel(
+          condition = "input.funccheck == TRUE",
+          uiOutput("funcname"),
+          uiOutput("checks"))),
       
       HTML("<br><br><br>")
     ),
@@ -313,17 +322,23 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
+  output$funcname <- renderUI({
+    if(input$func != "bdpsurvival" && input$funccheck == TRUE ){
+      textInput("anyfunc","Write in your function name")
+    }
+  })
+  
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+    if(input$func == "bdpsurvival" || input$formulacheck == TRUE ){list(
       menuItem("Formula", icon = icon("bar-chart-o"), 
                textInput("Formula",
                          label = "Formula",
                          value = "Surv(time, status) ~ historical + treatment"))
-    }
+    )}
   })
   
   output$colchoose <- renderUI({
-    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
+    if(input$func == "bdpsurvival" && input$funccheck == FALSE ){
       survcols <- c("status", "time", "historical", "treatment")
       
       survnames <- names(updata$x)
@@ -339,6 +354,27 @@ server <- function(input, output, enableBookmarking = "url"){
       out
     }
   })
+  
+  output$report <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "report.html",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "report.Rmd")
+      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+      
+      # Set up parameters to pass to Rmd document
+      params <- list(n = input$slider)
+      
+      # Knit the document, passing in the `params` list, and eval it in a
+      # child of the global environment (this isolates the code in the document
+      # from the code in this app).
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )})
   
 }
 
