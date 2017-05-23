@@ -12,46 +12,19 @@ ui <- function(request) {
                tags$a(href = "https://cran.r-project.org/package=bayesDP",
                       "View help files and download the package from CRAN")),
       
-      br(),
       bookmarkButton(),
-      br(),
       downloadButton("report", "Generate report"),
-      br(),
       
-      conditionalPanel(
-        condition = "input.funccheck == FALSE",
-        uiOutput("funcdrop")),
+      uiOutput("funcdrop"),
+      uiOutput("up"),
+      uiOutput("writeformula"),
+      uiOutput("colchoose"),
+      uiOutput("params"),
       
-      conditionalPanel(
-        condition = "input.func == 'bdpsurvival' || input.funccheck == FALSE",
-        menuItem("Data", icon = icon("table"),
-                 uiOutput("btag"),
-                 uiOutput("ex"),
-                 uiOutput("up"))),
-      
-      conditionalPanel(
-        condition = "input.formulacheck == TRUE",
-        uiOutput("writeformula")),
-      
-      conditionalPanel(
-        condition = "input.func == 'bdpsurvival' && input.funccheck == FALSE",
-        menuItem("Column Select",
-                 icon = icon("columns"),
-                 uiOutput("colchoose"))),
-      
-      menuItem("Inputs",
-               icon = icon("tasks"),
-               uiOutput("params")),
-      
-      menuItem("Dev Tool",
-               icon = icon("key"),
-      
+      menuItem("Dev Tool", icon = icon("key"),
         checkboxInput("funccheck", "Use your own function"),
-        
-        conditionalPanel(
-          condition = "input.funccheck == TRUE",
-          uiOutput("funcname"),
-          uiOutput("checks"))),
+        uiOutput("funcname"),
+        uiOutput("checks")),
       
       HTML("<br><br><br>")
     ),
@@ -69,7 +42,6 @@ ui <- function(request) {
 server <- function(input, output, enableBookmarking = "url"){
   
   params <- reactive({
-    
     if(input$funccheck == TRUE){
       params <- as.list(args(input$anyfunc))
     }
@@ -125,7 +97,6 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$params <- renderUI({
-    
     if(input$funccheck == FALSE){
       if(input$func == "bdpsurvival"){
         omit <- c("formula", "data")
@@ -144,7 +115,7 @@ server <- function(input, output, enableBookmarking = "url"){
       }
     }
       
-    lapply(setdiff(params_names(),omit),function(x){
+    out <- lapply(setdiff(params_names(),omit),function(x){
       if(class(params()[[x]]) == "logical"){
         do.call(textInput,list(x, label = x, value = params()[[x]]))
       }
@@ -158,21 +129,19 @@ server <- function(input, output, enableBookmarking = "url"){
         do.call(textInput,list(x, label = x, value = params()[[x]]))
       }
     })
+    menuItem("Inputs", icon = icon("tasks"), out)
   })
 
   final <- reactive({
-    
     final <- c()
     for(i in params_names()){
       final <- c(final, input[[i]])
     }
     
     if(input$funccheck == TRUE){
-      
       if(input$formulacheck == TRUE){
-        
+    
       }
-      
       if(input$datacheck == TRUE){
         
       }
@@ -230,11 +199,10 @@ server <- function(input, output, enableBookmarking = "url"){
   output$density <- renderPlot({
     plot(final(), type = "density")
   })
-
+  
   output$summary <- renderPrint({
     summary(final())
   })
-  
   output$print <- renderPrint({
     print(final())
   })
@@ -264,17 +232,10 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  #observeEvent(input$funccheck, {
-  #  toggle("anyfunc")  # toggle is a shinyjs function
-  #})
-  
   output$checks <- renderUI({
     if(input$funccheck == TRUE){
-      checkboxGroupInput("checks", "Customize Arguments:",
-                         choiceNames =
-                           list("formulacheck", "datacheck"),
-                         choiceValues =
-                           list("formulacheck", "datacheck"))
+      list(checkboxInput("formulacheck", "formulacheck"),
+           checkboxInput("datacheck", "datacheck"))
     }
   })
   
@@ -300,26 +261,20 @@ server <- function(input, output, enableBookmarking = "url"){
     mdout
   })
   
-  output$btag <- renderUI({
-    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
-      tags$style(type='text/css', "button#example_button { margin-left: 12px; }")
-    }
-  })
-      
-  output$ex <- renderUI({  
-    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
-      actionButton("example_button", label = "Use Example Data")
-    }
-  })
-      
   output$up <- renderUI({
-    if(input$func == "bdpsurvival" || input$funccheck == TRUE ){
-      fileInput("file1", "Upload .csv File",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv"))
+    if(input$func == "bdpsurvival" || input$datacheck == TRUE ){
+      out <- list()
+      out <- list(out,tags$style(type='text/css',
+                                 "button#example_button { margin-left: 12px; }"))
+      out <- list(out, actionButton("example_button",
+                                    label = "Use Example Data"))
+      out <- list(out, fileInput("file1", "Upload .csv File",
+                                 accept = c(
+                                   "text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")))
     }
+    menuItem("Data", icon = icon("table"),out)
   })
   
   output$funcname <- renderUI({
@@ -329,12 +284,13 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" || input$formulacheck == TRUE ){list(
-      menuItem("Formula", icon = icon("bar-chart-o"), 
-               textInput("Formula",
-                         label = "Formula",
-                         value = "Surv(time, status) ~ historical + treatment"))
-    )}
+    if(input$func == "bdpsurvival" || input$formulacheck == TRUE ){
+      menuItem("Formula",
+               icon = icon("bar-chart-o"),
+      textInput("Formula",
+                label = "Formula",
+                value = "Surv(time, status) ~ historical + treatment"))
+    }
   })
   
   output$colchoose <- renderUI({
@@ -351,7 +307,7 @@ server <- function(input, output, enableBookmarking = "url"){
                            selected = x)
         )
       })
-      out
+      menuItem("Column Select", icon = icon("columns"), out)
     }
   })
   
@@ -373,8 +329,7 @@ server <- function(input, output, enableBookmarking = "url"){
       # from the code in this app).
       rmarkdown::render(tempReport, output_file = file,
                         params = params,
-                        envir = new.env(parent = globalenv())
-      )})
+                        envir = new.env(parent = globalenv()))})
   
 }
 
