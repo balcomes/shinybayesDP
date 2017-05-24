@@ -8,10 +8,15 @@ ui <- function(request) {
     dashboardHeader(title = "bayesDP"),
     dashboardSidebar(
       tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
+      br(),
       tags$div(class = "header", checked = NA,
                tags$a(href = "https://cran.r-project.org/package=bayesDP",
                       "View help files and download the package from CRAN")),
-      
+      br(),
+      tags$div(class = "header", checked = NA,
+               tags$a(href = "https://github.com/balcomes/bayesDP",
+                      "Development version of bayesDP")),
+      br(),
       bookmarkButton(),
       downloadButton("report", "Generate report"),
       
