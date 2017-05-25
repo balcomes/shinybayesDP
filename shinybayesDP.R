@@ -191,20 +191,19 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     final
   })
-
-  output$discount <- renderPlot({
-    plot(final(), type = "discount")
-  })
-  output$survival <- renderPlot({
-    plot(final(), type = "survival")
-  })
-  output$posteriors <- renderPlot({
-    plot(final(), type = "posteriors")
-  })
-  output$density <- renderPlot({
-    plot(final(), type = "density")
-  })
   
+  
+  
+  discount   <- reactive({plot(final(), type = "discount")})
+  survival   <- reactive({plot(final(), type = "survival")})
+  posteriors <- reactive({plot(final(), type = "posteriors")})
+  density    <- reactive({plot(final(), type = "density")})
+
+  output$discount   <- renderPlot({plot(final(), type = "discount")})
+  output$survival   <- renderPlot({plot(final(), type = "survival")})
+  output$posteriors <- renderPlot({plot(final(), type = "posteriors")})
+  output$density    <- renderPlot({plot(final(), type = "density")})
+
   output$summary <- renderPrint({
     summary(final())
   })
@@ -217,22 +216,22 @@ server <- function(input, output, enableBookmarking = "url"){
   output$plottabs <- renderUI({
     if(input$func == "bdpsurvival"){
       tabsetPanel(
-        tabPanel("print", verbatimTextOutput("print")),
-        tabPanel("summary", verbatimTextOutput("summary")),
-        tabPanel("discount", plotOutput("discount")),
-        tabPanel("survival", plotOutput("survival")),
-        tabPanel("help", uiOutput("vig")),
-        tabPanel("data", dataTableOutput("contents"))
+        tabPanel("Print", verbatimTextOutput("print")),
+        tabPanel("Summary", verbatimTextOutput("summary")),
+        tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+        tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+        tabPanel("Help", uiOutput("vig")),
+        tabPanel("Data", dataTableOutput("contents"))
       )
     }
     else{
       tabsetPanel(
-        tabPanel("print", verbatimTextOutput("print")),
-        tabPanel("summary", verbatimTextOutput("summary")),
-        tabPanel("discount", plotOutput("discount")),
-        tabPanel("posteriors", plotOutput("posteriors")),
-        tabPanel("density", plotOutput("density")),
-        tabPanel("help", uiOutput("vig"))
+        tabPanel("Print", verbatimTextOutput("print")),
+        tabPanel("Summary", verbatimTextOutput("summary")),
+        tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+        tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
+        tabPanel(density()$plot$labels$title, plotOutput("density")),
+        tabPanel("Help", uiOutput("vig"))
       )
     }
   })
