@@ -247,7 +247,7 @@ server <- function(input, output, enableBookmarking = "url"){
     if(input$funccheck == FALSE){
       selectInput("func",
                   "Select Function",
-                  choices = c("bdpnormal", "bdpbinomial", "bdpsurvival"),
+                  choices = c("bdpnormal", "bdpbinomial", "bdpsurvival", "bdpregression"),
                   selected = "bdpnormal")
     }
   })
@@ -261,6 +261,9 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     if(input$func == "bdpsurvival"){
       mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpsurvival-vignette.Rmd", package="bayesDP")))
+    }
+    if(input$func == "bdpregression"){
+      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpregression-vignette.Rmd", package="bayesDP")))
     }
     mdout
   })
