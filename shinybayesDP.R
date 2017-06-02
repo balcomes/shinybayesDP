@@ -17,8 +17,12 @@ ui <- function(request) {
                tags$a(href = "https://github.com/balcomes/bayesDP",
                       "Development version of bayesDP")),
       br(),
+      
       bookmarkButton(),
-      downloadButton("report", "Generate report"),
+      
+      downloadButton("downloadReport", "Generate Report"),
+      radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
+                   inline = TRUE),
       
       uiOutput("funcdrop"),
       uiOutput("up"),
@@ -318,25 +322,30 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  output$report <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "report.html",
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      paste('my-report', sep = '.', switch(
+        input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
+      ))
+    },
+    
     content = function(file) {
-      # Copy the report file to a temporary directory before processing it, in
-      # case we don't have write permissions to the current working dir (which
-      # can happen when deployed).
-      tempReport <- file.path(tempdir(), "report.Rmd")
-      file.copy("report.Rmd", tempReport, overwrite = TRUE)
+      src <- normalizePath('report.Rmd')
       
-      # Set up parameters to pass to Rmd document
-      params <- list(n = input$slider)
+      # temporarily switch to the temp dir, in case you do not have write
+      # permission to the current working directory
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, 'report.Rmd', overwrite = TRUE)
       
-      # Knit the document, passing in the `params` list, and eval it in a
-      # child of the global environment (this isolates the code in the document
-      # from the code in this app).
-      rmarkdown::render(tempReport, output_file = file,
-                        params = params,
-                        envir = new.env(parent = globalenv()))})
+      library(rmarkdown)
+      out <- render('report.Rmd', switch(
+        input$format,
+        PDF = pdf_document(), HTML = html_document(), Word = word_document()
+      ))
+      file.rename(out, file)
+    }
+  )
   
 }
 
