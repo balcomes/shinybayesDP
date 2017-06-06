@@ -107,7 +107,7 @@ server <- function(input, output, enableBookmarking = "url"){
 
   output$params <- renderUI({
     if(input$funccheck == FALSE){
-      if(input$func == "bdpsurvival"){
+      if(input$func == "bdpsurvival" || input$func == "bdpregression"){
         omit <- c("formula", "data")
       }
       else{
@@ -168,7 +168,7 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     if(input$funccheck == FALSE){
       if(length(final > 0)){
-        if(input$func == "bdpsurvival" &&
+        if(input$func == "bdpsurvival" || input$func == "bdpregression" &&
            length(input$status) > 0 &&
            length(input$time) > 0 &&
            length(input$historical) > 0 &&
@@ -196,8 +196,6 @@ server <- function(input, output, enableBookmarking = "url"){
     final
   })
   
-  
-  
   discount   <- reactive({plot(final(), type = "discount")})
   survival   <- reactive({plot(final(), type = "survival")})
   posteriors <- reactive({plot(final(), type = "posteriors")})
@@ -224,6 +222,16 @@ server <- function(input, output, enableBookmarking = "url"){
         tabPanel("Summary", verbatimTextOutput("summary")),
         tabPanel(discount()$plot$labels$title, plotOutput("discount")),
         tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+        tabPanel("Help", uiOutput("vig")),
+        tabPanel("Data", dataTableOutput("contents"))
+      )
+    }
+    if(input$func == "bdpregression"){
+      tabsetPanel(
+        tabPanel("Print", verbatimTextOutput("print")),
+        tabPanel("Summary", verbatimTextOutput("summary")),
+        #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+        #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
         tabPanel("Help", uiOutput("vig")),
         tabPanel("Data", dataTableOutput("contents"))
       )
@@ -273,7 +281,7 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$up <- renderUI({
-    if(input$func == "bdpsurvival" || input$datacheck == TRUE ){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
       out <- list()
       out <- list(out,tags$style(type='text/css',
                                  "button#example_button { margin-left: 12px; }"))
@@ -289,13 +297,13 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$funcname <- renderUI({
-    if(input$func != "bdpsurvival" && input$funccheck == TRUE ){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
       textInput("anyfunc","Write in your function name")
     }
   })
   
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" || input$formulacheck == TRUE ){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
       menuItem("Formula",
                icon = icon("bar-chart-o"),
       textInput("Formula",
@@ -305,7 +313,7 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$colchoose <- renderUI({
-    if(input$func == "bdpsurvival" && input$funccheck == FALSE ){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" && input$funccheck == FALSE ){
       survcols <- c("status", "time", "historical", "treatment")
       
       survnames <- names(updata$x)
