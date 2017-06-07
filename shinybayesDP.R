@@ -29,16 +29,16 @@ ui <- function(request) {
       uiOutput("writeformula"),
       uiOutput("colchoose"),
       uiOutput("params"),
-      
-      menuItem("Dev Tool", icon = icon("key"),
-        checkboxInput("funccheck", "Use your own function"),
-        uiOutput("funcname"),
-        uiOutput("checks")),
+      uiOutput("dev"),
       
       HTML("<br><br><br>")
     ),
     dashboardBody(
       fluidPage(
+        tags$script('
+                $(document).on("keypress", function (e) {
+                    Shiny.onInputChange("secret", e.which);});
+                    '),
         tags$style(type = "text/css",
                    ".shiny-output-error { visibility: hidden; }",
                    ".shiny-output-error:before { visibility: hidden; }"),
@@ -51,7 +51,7 @@ ui <- function(request) {
 server <- function(input, output, enableBookmarking = "url"){
   
   params <- reactive({
-    if(input$funccheck == TRUE){
+    if(!is.null(input$funccheck) && input$funccheck == TRUE){
       params <- as.list(args(input$anyfunc))
     }
     else{
@@ -106,7 +106,7 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$params <- renderUI({
-    if(input$funccheck == FALSE){
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpsurvival" || input$func == "bdpregression"){
         omit <- c("formula", "data")
       }
@@ -116,10 +116,10 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     else{
       omit <- c()
-      if(input$formulacheck == TRUE){
+      if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
         omit <- c(omit, "formula")
       }
-      if(input$formulacheck == TRUE){
+      if(!is.null(input$datacheck) || input$datacheck == TRUE){
         omit <- c(omit, "data")
       }
     }
@@ -147,11 +147,11 @@ server <- function(input, output, enableBookmarking = "url"){
       final <- c(final, input[[i]])
     }
     
-    if(input$funccheck == TRUE){
-      if(input$formulacheck == TRUE){
+    if(!is.null(input$funccheck) && input$funccheck == TRUE){
+      if(!is.null(input$formulacheck) && input$formulacheck == TRUE){
     
       }
-      if(input$datacheck == TRUE){
+      if(!is.null(input$datacheck) && input$datacheck == TRUE){
         
       }
       
@@ -166,7 +166,7 @@ server <- function(input, output, enableBookmarking = "url"){
                                         collapse = ",")))
       
     }
-    if(input$funccheck == FALSE){
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(length(final > 0)){
         if(input$func == "bdpsurvival" || input$func == "bdpregression" &&
            length(input$status) > 0 &&
@@ -249,14 +249,14 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$checks <- renderUI({
-    if(input$funccheck == TRUE){
+    if(!is.null(input$funccheck) && input$funccheck == TRUE){
       list(checkboxInput("formulacheck", "formulacheck"),
            checkboxInput("datacheck", "datacheck"))
     }
   })
   
   output$funcdrop <- renderUI({
-    if(input$funccheck == FALSE){
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
       selectInput("func",
                   "Select Function",
                   choices = c("bdpnormal", "bdpbinomial", "bdpsurvival", "bdpregression"),
@@ -281,7 +281,7 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$up <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" || (!is.null(input$datacheck) && input$datacheck == TRUE)){
       out <- list()
       out <- list(out,tags$style(type='text/css',
                                  "button#example_button { margin-left: 12px; }"))
@@ -297,13 +297,13 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$funcname <- renderUI({
-    if(input$funccheck == TRUE){
+    if(!is.null(input$funccheck) && input$funccheck == TRUE){
       textInput("anyfunc","Write in your function name")
     }
   })
   
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
+    if(input$func == "bdpsurvival" || input$func == "bdpregression" || (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
       menuItem("Formula",
                icon = icon("bar-chart-o"),
       textInput("Formula",
@@ -313,7 +313,8 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$colchoose <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" && input$funccheck == FALSE ){
+    if((input$func == "bdpsurvival" || input$func == "bdpregression") &&
+       ((is.null(input$funccheck)  || input$funccheck == FALSE))){
       survcols <- c("status", "time", "historical", "treatment")
       
       survnames <- names(updata$x)
@@ -353,6 +354,26 @@ server <- function(input, output, enableBookmarking = "url"){
       file.rename(out, file)
     }
   )
+  
+  secret <- reactiveValues(x = 0)
+  
+  observeEvent(input$secret,{
+    if(input$secret == 96){
+      secret$x <- 1
+    }
+  })
+
+  output$dev <- renderUI({
+    conditionalPanel(
+      condition = "secret == 96",
+    
+    if(secret$x == 1){
+      menuItem("Dev Tool", icon = icon("key"),
+               checkboxInput("funccheck", "Use your own function"),
+               uiOutput("funcname"),
+               uiOutput("checks"))
+    })
+  })
   
 }
 
