@@ -297,7 +297,7 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$funcname <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" || input$datacheck == TRUE){
+    if(input$funccheck == TRUE){
       textInput("anyfunc","Write in your function name")
     }
   })
