@@ -17,28 +17,22 @@ ui <- function(request) {
                tags$a(href = "https://github.com/balcomes/bayesDP",
                       "Development version of bayesDP")),
       br(),
-      
       bookmarkButton(),
-      
       downloadButton("downloadReport", "Generate Report"),
       radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
                    inline = TRUE),
-      
       uiOutput("funcdrop"),
       uiOutput("up"),
       uiOutput("writeformula"),
       uiOutput("colchoose"),
       uiOutput("params"),
       uiOutput("dev"),
-      
       HTML("<br><br><br>")
     ),
     dashboardBody(
       fluidPage(
-        tags$script('
-                $(document).on("keypress", function (e) {
-                    Shiny.onInputChange("secret", e.which);});
-                    '),
+        tags$script('$(document).on("keypress", function (e) {
+                    Shiny.onInputChange("secret", e.which);});'),
         tags$style(type = "text/css",
                    ".shiny-output-error { visibility: hidden; }",
                    ".shiny-output-error:before { visibility: hidden; }"),
@@ -49,6 +43,8 @@ ui <- function(request) {
 }
 
 server <- function(input, output, enableBookmarking = "url"){
+  
+  updata <- reactiveValues(x = NULL)
   
   params <- reactive({
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
@@ -64,8 +60,6 @@ server <- function(input, output, enableBookmarking = "url"){
   params_names <- reactive({
     names(params())
   })
-  
-  updata <- reactiveValues(x = NULL)
   
   observe({
     input$example_button
@@ -166,6 +160,7 @@ server <- function(input, output, enableBookmarking = "url"){
                                         collapse = ",")))
       
     }
+    
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(length(final > 0)){
         if(input$func == "bdpsurvival" || input$func == "bdpregression" &&
@@ -259,29 +254,46 @@ server <- function(input, output, enableBookmarking = "url"){
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       selectInput("func",
                   "Select Function",
-                  choices = c("bdpnormal", "bdpbinomial", "bdpsurvival", "bdpregression"),
+                  choices = c("bdpnormal",
+                              "bdpbinomial",
+                              "bdpsurvival",
+                              "bdpregression"),
                   selected = "bdpnormal")
     }
   })
   
   output$vig <- renderUI({
     if(input$func == "bdpnormal"){
-      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpnormal-vignette.Rmd", package="bayesDP")))
+      mdout <- do.call(includeMarkdown,
+                       list(system.file("doc",
+                                        "bdpnormal-vignette.Rmd",
+                                        package="bayesDP")))
     }
     if(input$func == "bdpbinomial"){
-      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpbinomial-vignette.Rmd", package="bayesDP")))
+      mdout <- do.call(includeMarkdown,
+                       list(system.file("doc",
+                                        "bdpbinomial-vignette.Rmd",
+                                        package="bayesDP")))
     }
     if(input$func == "bdpsurvival"){
-      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpsurvival-vignette.Rmd", package="bayesDP")))
+      mdout <- do.call(includeMarkdown,
+                       list(system.file("doc",
+                                        "bdpsurvival-vignette.Rmd",
+                                        package="bayesDP")))
     }
     if(input$func == "bdpregression"){
-      mdout <- do.call(includeMarkdown, list(system.file("doc", "bdpregression-vignette.Rmd", package="bayesDP")))
+      mdout <- do.call(includeMarkdown,
+                       list(system.file("doc",
+                                        "bdpregression-vignette.Rmd",
+                                        package="bayesDP")))
     }
     mdout
   })
   
   output$up <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" || (!is.null(input$datacheck) && input$datacheck == TRUE)){
+    if(input$func == "bdpsurvival" ||
+       input$func == "bdpregression" ||
+       (!is.null(input$datacheck) && input$datacheck == TRUE)){
       out <- list()
       out <- list(out,tags$style(type='text/css',
                                  "button#example_button { margin-left: 12px; }"))
@@ -303,7 +315,9 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" || input$func == "bdpregression" || (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
+    if(input$func == "bdpsurvival" ||
+       input$func == "bdpregression" ||
+       (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
       menuItem("Formula",
                icon = icon("bar-chart-o"),
       textInput("Formula",
