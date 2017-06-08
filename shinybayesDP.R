@@ -31,6 +31,8 @@ ui <- function(request) {
     ),
     dashboardBody(
       fluidPage(
+        tags$head(tags$style(HTML("body {width: 100% !important;
+                                  max-width: 100% !important;}"))),
         tags$script('$(document).on("keypress", function (e) {
                     Shiny.onInputChange("secret", e.which);});'),
         tags$style(type = "text/css",
@@ -319,27 +321,27 @@ server <- function(input, output, enableBookmarking = "url"){
   output$vig <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpnormal"){
-        mdout <- do.call(includeMarkdown,
+        mdout <- do.call(includeHTML,
                          list(system.file("doc",
-                                          "bdpnormal-vignette.Rmd",
+                                          "bdpnormal-vignette.html",
                                           package="bayesDP")))
       }
       if(input$func == "bdpbinomial"){
-        mdout <- do.call(includeMarkdown,
+        mdout <- do.call(includeHTML,
                          list(system.file("doc",
-                                          "bdpbinomial-vignette.Rmd",
+                                          "bdpbinomial-vignette.html",
                                           package="bayesDP")))
       }
       if(input$func == "bdpsurvival"){
-        mdout <- do.call(includeMarkdown,
+        mdout <- do.call(includeHTML,
                          list(system.file("doc",
-                                          "bdpsurvival-vignette.Rmd",
+                                          "bdpsurvival-vignette.html",
                                           package="bayesDP")))
       }
       if(input$func == "bdpregression"){
-        mdout <- do.call(includeMarkdown,
+        mdout <- do.call(includeHTML,
                          list(system.file("doc",
-                                          "bdpregression-vignette.Rmd",
+                                          "bdpregression-vignette.html",
                                           package="bayesDP")))
       }
       else{
