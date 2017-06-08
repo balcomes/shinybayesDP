@@ -149,16 +149,9 @@ server <- function(input, output, enableBookmarking = "url"){
         
       }
       
-      final <- eval(parse(text = paste0(input$anyfunc,
-                                        "(",
-                                        "formula = ",
-                                        input$Formula,
-                                        ",",
-                                        "data = updata$x,",
-                                        paste0(final,collapse = ","),
-                                        ")",
-                                        collapse = ",")))
-      
+      final <- eval(parse(text = paste0(input$anyfunc,"(",
+                                        paste0(final,collapse = ",")
+                                        ,")")))
     }
     
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -191,15 +184,64 @@ server <- function(input, output, enableBookmarking = "url"){
     final
   })
   
-  discount   <- reactive({plot(final(), type = "discount")})
-  survival   <- reactive({plot(final(), type = "survival")})
-  posteriors <- reactive({plot(final(), type = "posteriors")})
-  density    <- reactive({plot(final(), type = "density")})
-
-  output$discount   <- renderPlot({plot(final(), type = "discount")})
-  output$survival   <- renderPlot({plot(final(), type = "survival")})
-  output$posteriors <- renderPlot({plot(final(), type = "posteriors")})
-  output$density    <- renderPlot({plot(final(), type = "density")})
+  discount <- reactive({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "discount")
+      }
+    }
+  })
+  posteriors <- reactive({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "posteriors")
+      }
+    }
+  })
+  density <- reactive({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "density")
+      }
+    }
+  })
+  
+  output$discount <- renderPlot({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "discount")
+      }
+    }
+  })
+  output$posteriors <- renderPlot({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "posteriors")
+      }
+    }
+  })
+  output$density <- renderPlot({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        plot(final(), type = "density")
+      }
+    }
+  })
+  
+  survival <- reactive({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpsurvival"){
+        plot(final(), type = "survival")
+      }
+    }
+  })
+  output$survival <- renderPlot({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpsurvival"){
+        plot(final(), type = "survival")
+      }
+    }
+  })
 
   output$summary <- renderPrint({
     summary(final())
@@ -211,34 +253,46 @@ server <- function(input, output, enableBookmarking = "url"){
   output$contents <- renderDataTable({updata$x})
   
   output$plottabs <- renderUI({
-    if(input$func == "bdpsurvival"){
-      tabsetPanel(
-        tabPanel("Print", verbatimTextOutput("print")),
-        tabPanel("Summary", verbatimTextOutput("summary")),
-        tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-        tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-        tabPanel("Help", uiOutput("vig")),
-        tabPanel("Data", dataTableOutput("contents"))
-      )
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpsurvival"){
+        tabsetPanel(
+          tabPanel("Print", verbatimTextOutput("print")),
+          tabPanel("Summary", verbatimTextOutput("summary")),
+          tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+          tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+          tabPanel("Help", uiOutput("vig")),
+          tabPanel("Data", dataTableOutput("contents"))
+        )
+      }
     }
-    if(input$func == "bdpregression"){
-      tabsetPanel(
-        tabPanel("Print", verbatimTextOutput("print")),
-        tabPanel("Summary", verbatimTextOutput("summary")),
-        #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-        #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-        tabPanel("Help", uiOutput("vig")),
-        tabPanel("Data", dataTableOutput("contents"))
-      )
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpregression"){
+        tabsetPanel(
+          tabPanel("Print", verbatimTextOutput("print")),
+          tabPanel("Summary", verbatimTextOutput("summary")),
+          #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+          #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+          tabPanel("Help", uiOutput("vig")),
+          tabPanel("Data", dataTableOutput("contents"))
+        )
+      }
+    }
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+        tabsetPanel(
+          tabPanel("Print", verbatimTextOutput("print")),
+          tabPanel("Summary", verbatimTextOutput("summary")),
+          tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+          tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
+          tabPanel(density()$plot$labels$title, plotOutput("density")),
+          tabPanel("Help", uiOutput("vig"))
+        )
+      }
     }
     else{
       tabsetPanel(
         tabPanel("Print", verbatimTextOutput("print")),
-        tabPanel("Summary", verbatimTextOutput("summary")),
-        tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-        tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
-        tabPanel(density()$plot$labels$title, plotOutput("density")),
-        tabPanel("Help", uiOutput("vig"))
+        tabPanel("Summary", verbatimTextOutput("summary"))
       )
     }
   })
@@ -263,31 +317,36 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$vig <- renderUI({
-    if(input$func == "bdpnormal"){
-      mdout <- do.call(includeMarkdown,
-                       list(system.file("doc",
-                                        "bdpnormal-vignette.Rmd",
-                                        package="bayesDP")))
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal"){
+        mdout <- do.call(includeMarkdown,
+                         list(system.file("doc",
+                                          "bdpnormal-vignette.Rmd",
+                                          package="bayesDP")))
+      }
+      if(input$func == "bdpbinomial"){
+        mdout <- do.call(includeMarkdown,
+                         list(system.file("doc",
+                                          "bdpbinomial-vignette.Rmd",
+                                          package="bayesDP")))
+      }
+      if(input$func == "bdpsurvival"){
+        mdout <- do.call(includeMarkdown,
+                         list(system.file("doc",
+                                          "bdpsurvival-vignette.Rmd",
+                                          package="bayesDP")))
+      }
+      if(input$func == "bdpregression"){
+        mdout <- do.call(includeMarkdown,
+                         list(system.file("doc",
+                                          "bdpregression-vignette.Rmd",
+                                          package="bayesDP")))
+      }
+      else{
+
+      }
+      mdout
     }
-    if(input$func == "bdpbinomial"){
-      mdout <- do.call(includeMarkdown,
-                       list(system.file("doc",
-                                        "bdpbinomial-vignette.Rmd",
-                                        package="bayesDP")))
-    }
-    if(input$func == "bdpsurvival"){
-      mdout <- do.call(includeMarkdown,
-                       list(system.file("doc",
-                                        "bdpsurvival-vignette.Rmd",
-                                        package="bayesDP")))
-    }
-    if(input$func == "bdpregression"){
-      mdout <- do.call(includeMarkdown,
-                       list(system.file("doc",
-                                        "bdpregression-vignette.Rmd",
-                                        package="bayesDP")))
-    }
-    mdout
   })
   
   output$up <- renderUI({
