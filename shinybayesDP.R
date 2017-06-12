@@ -2,6 +2,7 @@ library(bayesDP)
 library(shiny)
 library(shinydashboard)
 library(shinythemes)
+library(highlight)
 
 ui <- function(request) {
   dashboardPage(title = "bayesDP",
@@ -263,6 +264,7 @@ server <- function(input, output, enableBookmarking = "url"){
           tabPanel(discount()$plot$labels$title, plotOutput("discount")),
           tabPanel(survival()$plot$labels$title, plotOutput("survival")),
           tabPanel("Help", uiOutput("vig")),
+          tabPanel("Source", uiOutput("src")),
           tabPanel("Data", dataTableOutput("contents"))
         )
       }
@@ -275,6 +277,7 @@ server <- function(input, output, enableBookmarking = "url"){
           #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
           #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
           tabPanel("Help", uiOutput("vig")),
+          tabPanel("Source", uiOutput("src")),
           tabPanel("Data", dataTableOutput("contents"))
         )
       }
@@ -287,7 +290,8 @@ server <- function(input, output, enableBookmarking = "url"){
           tabPanel(discount()$plot$labels$title, plotOutput("discount")),
           tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
           tabPanel(density()$plot$labels$title, plotOutput("density")),
-          tabPanel("Help", uiOutput("vig"))
+          tabPanel("Help", uiOutput("vig")),
+          tabPanel("Source", uiOutput("src"))
         )
       }
     }
@@ -346,6 +350,39 @@ server <- function(input, output, enableBookmarking = "url"){
       }
       else{
 
+      }
+      mdout
+    }
+  })
+  
+  output$src <- renderUI({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpnormal"){
+        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpnormal.R",
+                          output = stdout(), renderer = renderer_html())
+        rend <- rend[grep("#'", rend, invert = TRUE)]
+        mdout <- do.call(HTML, list(rend))
+      }
+      if(input$func == "bdpbinomial"){
+        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpbinomial.R",
+                          output = stdout(), renderer = renderer_html())
+        rend <- rend[grep("#'", rend, invert = TRUE)]
+        mdout <- do.call(HTML, list(rend))
+      }
+      if(input$func == "bdpsurvival"){
+        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpsurvival.R",
+                          output = stdout(), renderer = renderer_html())
+        rend <- rend[grep("#'", rend, invert = TRUE)]
+        mdout <- do.call(HTML, list(rend))
+      }
+      if(input$func == "bdpregression"){
+        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpregression.R",
+                          output = stdout(), renderer = renderer_html())
+        rend <- rend[grep("#'", rend, invert = TRUE)]
+        mdout <- do.call(HTML, list(rend))
+      }
+      else{
+        
       }
       mdout
     }
