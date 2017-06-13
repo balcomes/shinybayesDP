@@ -22,12 +22,12 @@ ui <- function(request) {
       downloadButton("downloadReport", "Generate Report"),
       radioButtons('format', 'Document format', c('PDF', 'HTML', 'Word'),
                    inline = TRUE),
+      uiOutput("dev"),
       uiOutput("funcdrop"),
       uiOutput("up"),
       uiOutput("writeformula"),
       uiOutput("colchoose"),
       uiOutput("params"),
-      uiOutput("dev"),
       HTML("<br><br><br>")
     ),
     dashboardBody(
@@ -36,9 +36,9 @@ ui <- function(request) {
                                   max-width: 100% !important;}"))),
         tags$script('$(document).on("keypress", function (e) {
                     Shiny.onInputChange("secret", e.which);});'),
-        #tags$style(type = "text/css",
-        #           ".shiny-output-error { visibility: hidden; }",
-        #           ".shiny-output-error:before { visibility: hidden; }"),
+        tags$style(type = "text/css",
+                   ".shiny-output-error { visibility: hidden; }",
+                   ".shiny-output-error:before { visibility: hidden; }"),
         box(width = "100%", uiOutput("plottabs"))),
       hr()
     )
@@ -147,23 +147,14 @@ server <- function(input, output, enableBookmarking = "url"){
     
     for(i in params_names()){
       final <- c(final, input[[i]])
-      print(final)
       if(i %in% names(which(lapply(params(),function(x){class(x)=="character"})==TRUE))){
         j <- which(params_names()==i)
-        print(j)
         final[j-skip]<- paste0("'",final[j-skip],"'")
       }
-      print(final)
     }
     
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
-      #if(!is.null(input$formulacheck) && input$formulacheck == TRUE){
-#    
-#      }
-#      if(!is.null(input$datacheck) && input$datacheck == TRUE){
-#        
-#      }
-      
+
       final <- eval(parse(text = paste0(input$anyfunc,"(",
                                         paste0(final,collapse = ",")
                                         ,")")))
@@ -196,7 +187,6 @@ server <- function(input, output, enableBookmarking = "url"){
         }
       }
     }
-    print(final)
     final
   })
   
@@ -207,6 +197,7 @@ server <- function(input, output, enableBookmarking = "url"){
       }
     }
   })
+  
   posteriors <- reactive({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
@@ -214,10 +205,19 @@ server <- function(input, output, enableBookmarking = "url"){
       }
     }
   })
+  
   density <- reactive({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
         plot(final(), type = "density")
+      }
+    }
+  })
+  
+  survival <- reactive({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpsurvival"){
+        plot(final(), type = "survival")
       }
     }
   })
@@ -244,13 +244,6 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  survival <- reactive({
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpsurvival"){
-        plot(final(), type = "survival")
-      }
-    }
-  })
   output$survival <- renderPlot({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpsurvival"){
@@ -271,57 +264,56 @@ server <- function(input, output, enableBookmarking = "url"){
   output$plottabs <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpsurvival"){
-        tabsetPanel(
-          tabPanel("Print", verbatimTextOutput("print")),
-          tabPanel("Summary", verbatimTextOutput("summary")),
-          tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-          tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-          tabPanel("Help", uiOutput("vig")),
-          tabPanel("Source", uiOutput("src")),
-          tabPanel("Data", dataTableOutput("contents"))
+        return(
+          tabsetPanel(
+            tabPanel("Print", verbatimTextOutput("print")),
+            tabPanel("Summary", verbatimTextOutput("summary")),
+            tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+            tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Source", uiOutput("src")),
+            tabPanel("Data", dataTableOutput("contents"))
+          )
         )
       }
-    }
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
+
       if(input$func == "bdpregression"){
-        tabsetPanel(
-          tabPanel("Print", verbatimTextOutput("print")),
-          tabPanel("Summary", verbatimTextOutput("summary")),
-          #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-          #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-          tabPanel("Help", uiOutput("vig")),
-          tabPanel("Source", uiOutput("src")),
-          tabPanel("Data", dataTableOutput("contents"))
+        return(
+          tabsetPanel(
+            tabPanel("Print", verbatimTextOutput("print")),
+            tabPanel("Summary", verbatimTextOutput("summary")),
+            tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+            tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Source", uiOutput("src")),
+            tabPanel("Data", dataTableOutput("contents"))
+          )
         )
       }
-    }
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
+
       if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
-        tabsetPanel(
-          tabPanel("Print", verbatimTextOutput("print")),
-          tabPanel("Summary", verbatimTextOutput("summary")),
-          tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-          tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
-          tabPanel(density()$plot$labels$title, plotOutput("density")),
-          tabPanel("Help", uiOutput("vig")),
-          tabPanel("Source", uiOutput("src"))
+        return(
+          tabsetPanel(
+            tabPanel("Print", verbatimTextOutput("print")),
+            tabPanel("Summary", verbatimTextOutput("summary")),
+            tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+            tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
+            tabPanel(density()$plot$labels$title, plotOutput("density")),
+            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Source", uiOutput("src"))
+          )
         )
       }
     }
     else{
-      tabsetPanel(
-        tabPanel("Print", verbatimTextOutput("print")),
-        tabPanel("Summary", verbatimTextOutput("summary"))
+      return(
+        tabsetPanel(
+          tabPanel("Print", verbatimTextOutput("print")),
+          tabPanel("Summary", verbatimTextOutput("summary"))
+        )
       )
     }
   })
-  
-  #output$checks <- renderUI({
-  #  if(!is.null(input$funccheck) && input$funccheck == TRUE){
-  #    list(checkboxInput("formulacheck", "formulacheck"),
-  #         checkboxInput("datacheck", "datacheck"))
-  #  }
-  #})
   
   output$funcdrop <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -360,9 +352,6 @@ server <- function(input, output, enableBookmarking = "url"){
                          list(system.file("doc",
                                           "bdpregression-vignette.html",
                                           package="bayesDP")))
-      }
-      else{
-
       }
       mdout
     }
