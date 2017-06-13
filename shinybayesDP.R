@@ -36,9 +36,9 @@ ui <- function(request) {
                                   max-width: 100% !important;}"))),
         tags$script('$(document).on("keypress", function (e) {
                     Shiny.onInputChange("secret", e.which);});'),
-        tags$style(type = "text/css",
-                   ".shiny-output-error { visibility: hidden; }",
-                   ".shiny-output-error:before { visibility: hidden; }"),
+        #tags$style(type = "text/css",
+        #           ".shiny-output-error { visibility: hidden; }",
+        #           ".shiny-output-error:before { visibility: hidden; }"),
         box(width = "100%", uiOutput("plottabs"))),
       hr()
     )
@@ -113,10 +113,12 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     else{
       omit <- c()
-      if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
+      if("formula" %in% params_names()){
+      #if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
         omit <- c(omit, "formula")
       }
-      if(!is.null(input$datacheck) || input$datacheck == TRUE){
+      if("data" %in% params_names()){
+      #if(!is.null(input$datacheck) || input$datacheck == TRUE){
         omit <- c(omit, "data")
       }
     }
@@ -145,20 +147,22 @@ server <- function(input, output, enableBookmarking = "url"){
     
     for(i in params_names()){
       final <- c(final, input[[i]])
+      print(final)
       if(i %in% names(which(lapply(params(),function(x){class(x)=="character"})==TRUE))){
         j <- which(params_names()==i)
         print(j)
         final[j-skip]<- paste0("'",final[j-skip],"'")
       }
+      print(final)
     }
     
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
-      if(!is.null(input$formulacheck) && input$formulacheck == TRUE){
-    
-      }
-      if(!is.null(input$datacheck) && input$datacheck == TRUE){
-        
-      }
+      #if(!is.null(input$formulacheck) && input$formulacheck == TRUE){
+#    
+#      }
+#      if(!is.null(input$datacheck) && input$datacheck == TRUE){
+#        
+#      }
       
       final <- eval(parse(text = paste0(input$anyfunc,"(",
                                         paste0(final,collapse = ",")
@@ -192,6 +196,7 @@ server <- function(input, output, enableBookmarking = "url"){
         }
       }
     }
+    print(final)
     final
   })
   
@@ -311,12 +316,12 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  output$checks <- renderUI({
-    if(!is.null(input$funccheck) && input$funccheck == TRUE){
-      list(checkboxInput("formulacheck", "formulacheck"),
-           checkboxInput("datacheck", "datacheck"))
-    }
-  })
+  #output$checks <- renderUI({
+  #  if(!is.null(input$funccheck) && input$funccheck == TRUE){
+  #    list(checkboxInput("formulacheck", "formulacheck"),
+  #         checkboxInput("datacheck", "datacheck"))
+  #  }
+  #})
   
   output$funcdrop <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -397,10 +402,8 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$up <- renderUI({
-    if(input$func == "bdpsurvival" ||
-       input$func == "bdpregression" ||
-       (!is.null(input$datacheck) && input$datacheck == TRUE)){
-      out <- list()
+    out <- list()
+    if("data" %in% params_names()){
       out <- list(out,tags$style(type='text/css',
                                  "button#example_button { margin-left: 12px; }"))
       out <- list(out, actionButton("example_button",
@@ -411,7 +414,7 @@ server <- function(input, output, enableBookmarking = "url"){
                                    "text/comma-separated-values,text/plain",
                                    ".csv")))
     }
-    menuItem("Data", icon = icon("table"),out)
+    menuItem("Data", icon = icon("table"), out)
   })
   
   output$funcname <- renderUI({
@@ -421,9 +424,10 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$writeformula <- renderUI({
-    if(input$func == "bdpsurvival" ||
-       input$func == "bdpregression" ||
-       (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
+    if("formula" %in% params_names()){
+    #if(input$func == "bdpsurvival" ||
+    #   input$func == "bdpregression" ||
+    #   (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
       menuItem("Formula",
                icon = icon("bar-chart-o"),
       textInput("Formula",
