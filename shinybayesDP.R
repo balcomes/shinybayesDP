@@ -140,8 +140,16 @@ server <- function(input, output, enableBookmarking = "url"){
 
   final <- reactive({
     final <- c()
+    
+    skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
+    
     for(i in params_names()){
       final <- c(final, input[[i]])
+      if(i %in% names(which(lapply(params(),function(x){class(x)=="character"})==TRUE))){
+        j <- which(params_names()==i)
+        print(j)
+        final[j-skip]<- paste0("'",final[j-skip],"'")
+      }
     }
     
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
