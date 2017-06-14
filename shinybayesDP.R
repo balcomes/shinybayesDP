@@ -47,7 +47,9 @@ ui <- function(request) {
 
 server <- function(input, output, enableBookmarking = "url"){
   
-  updata <- reactiveValues(x = NULL)
+  ##############################################################################
+  # Get function parameters and build dynamic UI elements.
+  ##############################################################################
   
   params <- reactive({
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
@@ -63,6 +65,51 @@ server <- function(input, output, enableBookmarking = "url"){
   params_names <- reactive({
     names(params())
   })
+  
+  output$params <- renderUI({
+    if(is.null(input$funccheck) || input$funccheck == FALSE){
+      if(input$func == "bdpsurvival" || input$func == "bdpregression"){
+        omit <- c("formula", "data")
+      }
+      else{
+        omit <- c()
+      }
+    }
+    else{
+      omit <- c()
+      if("formula" %in% params_names()){
+        #if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
+        omit <- c(omit, "formula")
+      }
+      if("data" %in% params_names()){
+        #if(!is.null(input$datacheck) || input$datacheck == TRUE){
+        omit <- c(omit, "data")
+      }
+    }
+    
+    out <- lapply(setdiff(params_names(),omit),function(x){
+      if(class(params()[[x]]) == "logical"){
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+      if(class(params()[[x]]) == "numeric"){
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+      if(class(params()[[x]]) == "NULL"){
+        do.call(textInput,list(x, label = x, value = 100))
+      }
+      else{
+        do.call(textInput,list(x, label = x, value = params()[[x]]))
+      }
+    })
+    menuItem("Inputs", icon = icon("tasks"), out)
+  })
+  
+  
+  ##############################################################################
+  # Upload CSV data as a data frame or use example data.
+  ##############################################################################
+  
+  updata <- reactiveValues(x = NULL)
   
   observe({
     input$example_button
@@ -94,6 +141,22 @@ server <- function(input, output, enableBookmarking = "url"){
       updata$x <- read.csv(inFile$datapath,header=TRUE)
     }
   })
+  
+  output$up <- renderUI({
+    out <- list()
+    if("data" %in% params_names()){
+      out <- list(out,tags$style(type='text/css',
+                                 "button#example_button { margin-left: 12px; }"))
+      out <- list(out, actionButton("example_button",
+                                    label = "Use Example Data"))
+      out <- list(out, fileInput("file1", "Upload .csv File",
+                                 accept = c(
+                                   "text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")))
+    }
+    menuItem("Data", icon = icon("table"), out)
+  })
 
   survchosen <- reactive({
     data.frame(status     = updata$x[[input$status]],
@@ -102,43 +165,7 @@ server <- function(input, output, enableBookmarking = "url"){
                treatment  = updata$x[[input$treatment]])
   })
 
-  output$params <- renderUI({
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpsurvival" || input$func == "bdpregression"){
-        omit <- c("formula", "data")
-      }
-      else{
-        omit <- c()
-      }
-    }
-    else{
-      omit <- c()
-      if("formula" %in% params_names()){
-      #if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
-        omit <- c(omit, "formula")
-      }
-      if("data" %in% params_names()){
-      #if(!is.null(input$datacheck) || input$datacheck == TRUE){
-        omit <- c(omit, "data")
-      }
-    }
-      
-    out <- lapply(setdiff(params_names(),omit),function(x){
-      if(class(params()[[x]]) == "logical"){
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
-      }
-      if(class(params()[[x]]) == "numeric"){
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
-      }
-      if(class(params()[[x]]) == "NULL"){
-        do.call(textInput,list(x, label = x, value = 100))
-      }
-      else{
-        do.call(textInput,list(x, label = x, value = params()[[x]]))
-      }
-    })
-    menuItem("Inputs", icon = icon("tasks"), out)
-  })
+
 
   final <- reactive({
     final <- c()
@@ -189,6 +216,11 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     final
   })
+  
+  
+  ##############################################################################
+  # Produce plots with dynamic tab names.
+  ##############################################################################
   
   discount <- reactive({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -251,7 +283,12 @@ server <- function(input, output, enableBookmarking = "url"){
       }
     }
   })
-
+  
+  
+  ##############################################################################
+  # Print and Summary tabs.
+  ##############################################################################
+  
   output$summary <- renderPrint({
     summary(final())
   })
@@ -259,7 +296,21 @@ server <- function(input, output, enableBookmarking = "url"){
     print(final())
   })
   
+  output$simpleplot <- renderPlot({
+    plot(final())
+  })
+  
+  
+  ##############################################################################
+  # Data table tab for uploaded CSV
+  ##############################################################################
+  
   output$contents <- renderDataTable({updata$x})
+  
+  
+  ##############################################################################
+  # Tab set panel structure for each function.
+  ##############################################################################
   
   output$plottabs <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -309,11 +360,17 @@ server <- function(input, output, enableBookmarking = "url"){
       return(
         tabsetPanel(
           tabPanel("Print", verbatimTextOutput("print")),
-          tabPanel("Summary", verbatimTextOutput("summary"))
+          tabPanel("Summary", verbatimTextOutput("summary")),
+          tabPanel("Plot", plotOutput("simpleplot"))
         )
       )
     }
   })
+  
+  
+  ##############################################################################
+  # bayesDP function selection dropdown.
+  ##############################################################################
   
   output$funcdrop <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -326,6 +383,11 @@ server <- function(input, output, enableBookmarking = "url"){
                   selected = "bdpnormal")
     }
   })
+  
+  
+  ##############################################################################
+  # Vignette panel for each bayesDP function.
+  ##############################################################################
   
   output$vig <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -356,6 +418,11 @@ server <- function(input, output, enableBookmarking = "url"){
       mdout
     }
   })
+  
+  
+  ##############################################################################
+  # Source code panel for each bayesDP function.
+  ##############################################################################
   
   output$src <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
@@ -390,21 +457,10 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
-  output$up <- renderUI({
-    out <- list()
-    if("data" %in% params_names()){
-      out <- list(out,tags$style(type='text/css',
-                                 "button#example_button { margin-left: 12px; }"))
-      out <- list(out, actionButton("example_button",
-                                    label = "Use Example Data"))
-      out <- list(out, fileInput("file1", "Upload .csv File",
-                                 accept = c(
-                                   "text/csv",
-                                   "text/comma-separated-values,text/plain",
-                                   ".csv")))
-    }
-    menuItem("Data", icon = icon("table"), out)
-  })
+  
+  ##############################################################################
+  # Textbox for user to write in any function in dev mode.
+  ##############################################################################
   
   output$funcname <- renderUI({
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
@@ -412,11 +468,13 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   })
   
+  
+  ##############################################################################
+  # Textbox for user to write in a formula for functions that require it.
+  ##############################################################################
+  
   output$writeformula <- renderUI({
     if("formula" %in% params_names()){
-    #if(input$func == "bdpsurvival" ||
-    #   input$func == "bdpregression" ||
-    #   (!is.null(input$formulacheck) && input$formulacheck == TRUE)){
       menuItem("Formula",
                icon = icon("bar-chart-o"),
       textInput("Formula",
@@ -424,6 +482,11 @@ server <- function(input, output, enableBookmarking = "url"){
                 value = "Surv(time, status) ~ historical + treatment"))
     }
   })
+  
+  
+  ##############################################################################
+  # bdpsurvival and bdpregression specific dropdowns for column selection. 
+  ##############################################################################
   
   output$colchoose <- renderUI({
     if((input$func == "bdpsurvival" || input$func == "bdpregression") &&
@@ -443,6 +506,11 @@ server <- function(input, output, enableBookmarking = "url"){
       menuItem("Column Select", icon = icon("columns"), out)
     }
   })
+  
+  
+  ##############################################################################
+  # Download reports.
+  ##############################################################################
   
   output$downloadReport <- downloadHandler(
     filename = function() {
@@ -467,6 +535,11 @@ server <- function(input, output, enableBookmarking = "url"){
       file.rename(out, file)
     }
   )
+  
+  
+  ##############################################################################
+  # Dev mode code.  Click dashboard body and hit "`" (tild ~ key, no shift).
+  ##############################################################################
   
   secret <- reactiveValues(x = 0)
   
