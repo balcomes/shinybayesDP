@@ -192,7 +192,7 @@ server <- function(input, output, enableBookmarking = "url"){
   
   discount <- reactive({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial" || input$func == "bdpsurvival"){
         plot(final(), type = "discount")
       }
     }
@@ -224,7 +224,7 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$discount <- renderPlot({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+      if(input$func == "bdpnormal" || input$func == "bdpbinomial" || input$func == "bdpsurvival"){
         plot(final(), type = "discount")
       }
     }
