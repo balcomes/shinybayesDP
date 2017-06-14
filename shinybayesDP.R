@@ -78,11 +78,9 @@ server <- function(input, output, enableBookmarking = "url"){
     else{
       omit <- c()
       if("formula" %in% params_names()){
-        #if(!is.null(input$formulacheck) || input$formulacheck == TRUE){
         omit <- c(omit, "formula")
       }
       if("data" %in% params_names()){
-        #if(!is.null(input$datacheck) || input$datacheck == TRUE){
         omit <- c(omit, "data")
       }
     }
@@ -168,6 +166,7 @@ server <- function(input, output, enableBookmarking = "url"){
 
 
   final <- reactive({
+    
     final <- c()
     
     skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
@@ -181,14 +180,46 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     
     if(!is.null(input$funccheck) && input$funccheck == TRUE){
-
-      final <- eval(parse(text = paste0(input$anyfunc,"(",
-                                        paste0(final,collapse = ",")
-                                        ,")")))
+      myfunc <- input$anyfunc
+    }
+    else{
+      myfunc <- input$func
     }
     
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(length(final > 0)){
+    if(length(final > 0)){
+    
+      if(!is.null(input$funccheck) && input$funccheck == TRUE){
+        
+        if("data" %in% params_names()  && "formula" %in% params_names()){
+          return(
+            eval(parse(text = paste0(myfunc,
+                                     "(",
+                                     "formula = ",
+                                     input$Formula,
+                                     ",",
+                                     "data = updata$x,",
+                                     paste0(final,collapse = ","),
+                                     ")",
+                                     collapse = ",")))
+          )
+        }
+        else{
+          return(
+            eval(parse(text = paste0(myfunc,"(",
+                                     paste0(final,collapse = ",")
+                                     ,")")))
+          )
+        }
+      }
+      else{
+  
+        if(input$func %in% c("bdpnormal","bdpbinomial")){
+          return(
+            eval(parse(text = paste0(myfunc,"(",
+                                     paste0(final,collapse = ",")
+                                     ,")")))
+          )
+        }
         if(input$func == "bdpsurvival" || input$func == "bdpregression" &&
            length(input$status) > 0 &&
            length(input$time) > 0 &&
@@ -196,8 +227,9 @@ server <- function(input, output, enableBookmarking = "url"){
            length(input$treatment) > 0 &&
            length(input$func) > 0 &&
            length(survchosen()) > 0){
-          
-          final <- eval(parse(text = paste0(input$func,
+        #if("data" %in% params_names()  && "formula" %in% params_names()){
+          return(
+            eval(parse(text = paste0(myfunc,
                                             "(",
                                             "formula = ",
                                             input$Formula,
@@ -206,15 +238,10 @@ server <- function(input, output, enableBookmarking = "url"){
                                             paste0(final,collapse = ","),
                                             ")",
                                             collapse = ",")))
-        }
-        if(input$func %in% c("bdpnormal","bdpbinomial")){
-          final <- eval(parse(text = paste0(input$func,"(",
-                                            paste0(final,collapse = ",")
-                                            ,")")))
+          )
         }
       }
     }
-    final
   })
   
   
@@ -307,6 +334,18 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$contents <- renderDataTable({updata$x})
   
+  #output$devcontents <- lapply(params_names(),function(x){
+  #  do.call(tabPanel,list(x,do.call(dataTableOutput,list(x, label = x, value = params()[[x]]))))
+  #})
+    
+  
+  #lapply(params_names(),function(x){
+  #  do.call(renderDataTable(),list(x, label = x, value = params()[[x]]))
+  #})
+    
+    
+  output$devcontents <- renderDataTable({as.data.frame(eval(parse(text = input[[params_names()[1]]])))})
+  
   
   ##############################################################################
   # Tab set panel structure for each function.
@@ -357,11 +396,13 @@ server <- function(input, output, enableBookmarking = "url"){
       }
     }
     else{
+  
       return(
         tabsetPanel(
           tabPanel("Print", verbatimTextOutput("print")),
           tabPanel("Summary", verbatimTextOutput("summary")),
-          tabPanel("Plot", plotOutput("simpleplot"))
+          tabPanel("Plot", plotOutput("simpleplot")),
+          tabPanel("Data", dataTableOutput("devcontents"))
         )
       )
     }
