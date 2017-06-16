@@ -28,6 +28,7 @@ ui <- function(request) {
       uiOutput("writeformula"),
       uiOutput("colchoose"),
       uiOutput("params"),
+      #uiOutput("togparams"),
       HTML("<br><br><br>")
     ),
     dashboardBody(
@@ -162,8 +163,6 @@ server <- function(input, output, enableBookmarking = "url"){
                historical = updata$x[[input$historical]],
                treatment  = updata$x[[input$treatment]])
   })
-
-
 
   final <- reactive({
     
@@ -608,6 +607,53 @@ server <- function(input, output, enableBookmarking = "url"){
                uiOutput("checks"))
     })
   })
+  
+  
+  
+  output$togparams <- renderUI({
+      
+      ch <- lapply(params_names(),function(x){
+        ch <- do.call(checkboxInput,list(paste0(x,"1"),"Data Frame Toggle"))
+        return(ch)
+      })
+      
+      tx <- lapply(params_names(),function(x){
+        tx <- do.call(textInput,list(paste0(x,"2"),paste0(x,"2")))
+        return(tx)
+      })
+      
+      df <- lapply(params_names(),function(x){
+        df <- do.call(upcsv,list(paste0(x,"3")))
+        return(df)
+      })
+
+      out <- list()
+      
+      for(i in 1:length(params_names())){
+        #if(!is.null(input[[paste0(params_names()[i],"1")]]) && input[[paste0(params_names()[i],"1")]]){
+          #out <- list(out,list(ch[i],df[i]))
+          #print(out)
+        #}
+        
+        #if(!is.null(input[[paste0(params_names()[i],"1")]]) && !input[[paste0(params_names()[i],"1")]]){
+          #out <- list(out,list(ch[i],tx[i]))
+          #print(out)
+        #}
+      }
+      
+      #print(out)
+      return(out)
+    })
+  
+  upcsv <- function(x){
+    return(
+      fileInput(paste0(x,"4"), "Upload .csv File",
+                accept = c(
+                  "text/csv",
+                  "text/comma-separated-values,text/plain",
+                  ".csv"))
+    )
+  }
   
 }
 
