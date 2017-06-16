@@ -144,7 +144,7 @@ server <- function(input, output, enableBookmarking = "url"){
     out <- list()
     if("data" %in% params_names()){
       out <- list(out,tags$style(type='text/css',
-                                 "button#example_button { margin-left: 12px; }"))
+                                 "button#example_button {margin-left: 12px;}"))
       out <- list(out, actionButton("example_button",
                                     label = "Use Example Data"))
       out <- list(out, fileInput("file1", "Upload .csv File",
@@ -173,7 +173,8 @@ server <- function(input, output, enableBookmarking = "url"){
     
     for(i in params_names()){
       final <- c(final, input[[i]])
-      if(i %in% names(which(lapply(params(),function(x){class(x)=="character"})==TRUE))){
+      if(i %in% names(which(lapply(params(),
+                                   function(x){class(x)=="character"})==TRUE))){
         j <- which(params_names()==i)
         final[j-skip]<- paste0("'",final[j-skip],"'")
       }
@@ -251,7 +252,9 @@ server <- function(input, output, enableBookmarking = "url"){
   
   discount <- reactive({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpnormal" || input$func == "bdpbinomial" || input$func == "bdpsurvival"){
+      if(input$func == "bdpnormal" ||
+         input$func == "bdpbinomial" ||
+         input$func == "bdpsurvival"){
         plot(final(), type = "discount")
       }
     }
@@ -283,7 +286,9 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$discount <- renderPlot({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpnormal" || input$func == "bdpbinomial" || input$func == "bdpsurvival"){
+      if(input$func == "bdpnormal" ||
+         input$func == "bdpbinomial" ||
+         input$func == "bdpsurvival"){
         plot(final(), type = "discount")
       }
     }
@@ -344,7 +349,9 @@ server <- function(input, output, enableBookmarking = "url"){
   #})
     
     
-  output$devcontents <- renderDataTable({as.data.frame(eval(parse(text = input[[params_names()[1]]])))})
+  output$devcontents <- renderDataTable({
+    as.data.frame(eval(parse(text = input[[params_names()[1]]])))
+  })
   
   
   ##############################################################################
