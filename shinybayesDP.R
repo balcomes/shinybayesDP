@@ -609,51 +609,87 @@ server <- function(input, output, enableBookmarking = "url"){
     })
   })
   
-  
-  
-  ch <- reactive({
-    ch <- lapply(params_names(),function(x){
-      ch <- do.call(checkboxInput,list(paste0(x,"1"),"Data Frame Toggle"))
-      return(ch)
-    })
-  })
+  output$togparams <- renderUI({
+    out <- list()
+    for(i in 1:length(params_names)){
       
-  tx <- reactive({
-    tx <- lapply(params_names(),function(x){
-      tx <- do.call(textInput,list(paste0(x,"2"),paste0(x,"2")))
-      return(tx)
-    })
-  })
-  
-  df <- reactive({
-    df <- lapply(params_names(),function(x){
-      df <- do.call(upcsv,list(paste0(x,"3")))
-      return(df)
-    })
-  })
-
-      
-    output$togparams <- renderUI({
-      
-    out <- c()
-    for(i in paste0(params_names(),"1")){
-      
-      isolate({
-        ind <- which(paste0(params_names(),"1")==i)
-        out <- c(out, ch()[ind])
-      })
-      
-      if(!is.null(input[[i]]) && input[[i]] == TRUE){
-        out <- c(out, df()[ind])
-      }
-      else{
-        out <- c(out, tx()[ind])
-      }
+      out <- list(out,ch()[i],tx()[i],df()[i])
       
     }
-
+    print(out)
     return(out)
   })
+
+  ch <- reactive({
+    out <- list()
+    for(i in params_names()){
+      out <- list(out,do.call(checkboxInput,list(paste0(i,"1"),paste0(i,"1"))))
+    }
+    print(out)
+    return(out)
+  })
+  
+  tx <- reactive({
+    out <- list()
+    for(i in params_names()){
+      do.call(conditionalPanel,
+              list(condition = paste0("output.",i,1) == FALSE,{
+                out <- list(out, do.call(textInput,list(paste0(i,"2"),
+                                              "Data Frame Toggle")))
+              }))
+    }
+    print(out)
+    return(out)
+    })
+  
+  df <- reactive({
+    out <- list()
+    for(i in params_names()){
+      do.call(conditionalPanel,
+              list(condition = paste0("output.",i,1) == TRUE,{
+                out <- list(out, do.call(upcsv,list(paste0(i,"3"))))
+              }))
+    }
+    print(out)
+    return(out)
+    })
+
+      
+  #tx <- renderUI({
+  #  return(do.call(textInput,list(paste0(x,"2"),paste0(x,"2"))))
+  #})
+  
+  #df <- renderUI({
+  #  return(do.call(upcsv,list(paste0(x,"3"))))
+  #})
+  
+  #lapply(pn$x,function(x){
+  #  return(list(
+  #    uiOutput("ch"),
+  #    uiOutput("dftx")
+  #  ))
+  #})
+  
+  #output$togparams2 <- renderUI({
+  #  
+  #})
+
+  #output$togparams2 <- renderUI({
+  #  out <- c()
+  #  for(i in paste0(params_names(),"1")){
+  #    
+  #    ind <- which(paste0(params_names(),"1")==i)
+  #    out <- c(out, ch()[ind])
+  #    
+  #    if(!is.null(input[[i]]) && input[[i]]){
+  #      out <- c(out, df()[ind])
+  #    }
+  #    else{
+  #      out <- c(out, tx()[ind])
+  #    }
+  #  }
+  #  return(out)
+  #})
   
   upcsv <- function(x){
     return(
