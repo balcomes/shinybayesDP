@@ -28,7 +28,7 @@ ui <- function(request) {
       uiOutput("writeformula"),
       uiOutput("colchoose"),
       uiOutput("params"),
-      #uiOutput("togparams"),
+      uiOutput("togparams"),
       HTML("<br><br><br>")
     ),
     dashboardBody(
@@ -68,8 +68,8 @@ server <- function(input, output, enableBookmarking = "url"){
   })
   
   output$params <- renderUI({
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpsurvival" || input$func == "bdpregression"){
+    if(!is.null(input$func) && (is.null(input$funccheck) || input$funccheck == FALSE)){
+      if(!is.null(input$func) && (input$func == "bdpsurvival" || input$func == "bdpregression")){
         omit <- c("formula", "data")
       }
       else{
@@ -165,80 +165,81 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   final <- reactive({
-    
-    final <- c()
-    
-    skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
-    
-    for(i in params_names()){
-      final <- c(final, input[[i]])
-      if(i %in% names(which(lapply(params(),
-                                   function(x){class(x)=="character"})==TRUE))){
-        j <- which(params_names()==i)
-        final[j-skip]<- paste0("'",final[j-skip],"'")
+    if(!is.null(input$func)){
+      final <- c()
+      
+      skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
+      
+      for(i in params_names()){
+        final <- c(final, input[[i]])
+        if(i %in% names(which(lapply(params(),
+                                     function(x){class(x)=="character"})==TRUE))){
+          j <- which(params_names()==i)
+          final[j-skip]<- paste0("'",final[j-skip],"'")
+        }
       }
-    }
-    
-    if(!is.null(input$funccheck) && input$funccheck == TRUE){
-      myfunc <- input$anyfunc
-    }
-    else{
-      myfunc <- input$func
-    }
-    
-    if(length(final > 0)){
-    
+      
       if(!is.null(input$funccheck) && input$funccheck == TRUE){
-        
-        if("data" %in% params_names()  && "formula" %in% params_names()){
-          return(
-            eval(parse(text = paste0(myfunc,
-                                     "(",
-                                     "formula = ",
-                                     input$Formula,
-                                     ",",
-                                     "data = updata$x,",
-                                     paste0(final,collapse = ","),
-                                     ")",
-                                     collapse = ",")))
-          )
-        }
-        else{
-          return(
-            eval(parse(text = paste0(myfunc,"(",
-                                     paste0(final,collapse = ",")
-                                     ,")")))
-          )
-        }
+        myfunc <- input$anyfunc
       }
       else{
-  
-        if(input$func %in% c("bdpnormal","bdpbinomial")){
-          return(
-            eval(parse(text = paste0(myfunc,"(",
-                                     paste0(final,collapse = ",")
-                                     ,")")))
-          )
+        myfunc <- input$func
+      }
+      
+      if(length(final > 0)){
+      
+        if(!is.null(input$funccheck) && input$funccheck == TRUE){
+          
+          if("data" %in% params_names()  && "formula" %in% params_names()){
+            return(
+              eval(parse(text = paste0(myfunc,
+                                       "(",
+                                       "formula = ",
+                                       input$Formula,
+                                       ",",
+                                       "data = updata$x,",
+                                       paste0(final,collapse = ","),
+                                       ")",
+                                       collapse = ",")))
+            )
+          }
+          else{
+            return(
+              eval(parse(text = paste0(myfunc,"(",
+                                       paste0(final,collapse = ",")
+                                       ,")")))
+            )
+          }
         }
-        if(input$func == "bdpsurvival" || input$func == "bdpregression" &&
-           length(input$status) > 0 &&
-           length(input$time) > 0 &&
-           length(input$historical) > 0 &&
-           length(input$treatment) > 0 &&
-           length(input$func) > 0 &&
-           length(survchosen()) > 0){
-        #if("data" %in% params_names()  && "formula" %in% params_names()){
-          return(
-            eval(parse(text = paste0(myfunc,
-                                            "(",
-                                            "formula = ",
-                                            input$Formula,
-                                            ",",
-                                            "data = survchosen(),",
-                                            paste0(final,collapse = ","),
-                                            ")",
-                                            collapse = ",")))
-          )
+        else{
+    
+          if(!is.null(input$func) && input$func %in% c("bdpnormal","bdpbinomial")){
+            return(
+              eval(parse(text = paste0(myfunc,"(",
+                                       paste0(final,collapse = ",")
+                                       ,")")))
+            )
+          }
+          if(!is.null(input$func) && (input$func == "bdpsurvival" || input$func == "bdpregression") &&
+             length(input$status) > 0 &&
+             length(input$time) > 0 &&
+             length(input$historical) > 0 &&
+             length(input$treatment) > 0 &&
+             length(input$func) > 0 &&
+             length(survchosen()) > 0){
+          #if("data" %in% params_names()  && "formula" %in% params_names()){
+            return(
+              eval(parse(text = paste0(myfunc,
+                                              "(",
+                                              "formula = ",
+                                              input$Formula,
+                                              ",",
+                                              "data = survchosen(),",
+                                              paste0(final,collapse = ","),
+                                              ")",
+                                              collapse = ",")))
+            )
+          }
         }
       }
     }
@@ -250,7 +251,7 @@ server <- function(input, output, enableBookmarking = "url"){
   ##############################################################################
   
   discount <- reactive({
-    if(is.null(input$funccheck) || input$funccheck == FALSE){
+    if(!is.null(input$func) && (is.null(input$funccheck) || input$funccheck == FALSE)){
       if(input$func == "bdpnormal" ||
          input$func == "bdpbinomial" ||
          input$func == "bdpsurvival"){
@@ -359,7 +360,7 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$plottabs <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
-      if(input$func == "bdpsurvival"){
+      if(!is.null(input$func) && input$func == "bdpsurvival"){
         return(
           tabsetPanel(
             tabPanel("Print", verbatimTextOutput("print")),
@@ -373,7 +374,7 @@ server <- function(input, output, enableBookmarking = "url"){
         )
       }
 
-      if(input$func == "bdpregression"){
+      if(!is.null(input$func) && input$func == "bdpregression"){
         return(
           tabsetPanel(
             tabPanel("Print", verbatimTextOutput("print")),
@@ -387,7 +388,7 @@ server <- function(input, output, enableBookmarking = "url"){
         )
       }
 
-      if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+      if(!is.null(input$func) && (input$func == "bdpnormal" || input$func == "bdpbinomial")){
         return(
           tabsetPanel(
             tabPanel("Print", verbatimTextOutput("print")),
@@ -536,7 +537,7 @@ server <- function(input, output, enableBookmarking = "url"){
   ##############################################################################
   
   output$colchoose <- renderUI({
-    if((input$func == "bdpsurvival" || input$func == "bdpregression") &&
+    if(!is.null(input$func) && (input$func == "bdpsurvival" || input$func == "bdpregression") &&
        ((is.null(input$funccheck)  || input$funccheck == FALSE))){
       survcols <- c("status", "time", "historical", "treatment")
       
@@ -610,40 +611,49 @@ server <- function(input, output, enableBookmarking = "url"){
   
   
   
-  output$togparams <- renderUI({
+  ch <- reactive({
+    ch <- lapply(params_names(),function(x){
+      ch <- do.call(checkboxInput,list(paste0(x,"1"),"Data Frame Toggle"))
+      return(ch)
+    })
+  })
       
-      ch <- lapply(params_names(),function(x){
-        ch <- do.call(checkboxInput,list(paste0(x,"1"),"Data Frame Toggle"))
-        return(ch)
-      })
-      
-      tx <- lapply(params_names(),function(x){
-        tx <- do.call(textInput,list(paste0(x,"2"),paste0(x,"2")))
-        return(tx)
-      })
-      
-      df <- lapply(params_names(),function(x){
-        df <- do.call(upcsv,list(paste0(x,"3")))
-        return(df)
-      })
+  tx <- reactive({
+    tx <- lapply(params_names(),function(x){
+      tx <- do.call(textInput,list(paste0(x,"2"),paste0(x,"2")))
+      return(tx)
+    })
+  })
+  
+  df <- reactive({
+    df <- lapply(params_names(),function(x){
+      df <- do.call(upcsv,list(paste0(x,"3")))
+      return(df)
+    })
+  })
 
-      out <- list()
       
-      for(i in 1:length(params_names())){
-        #if(!is.null(input[[paste0(params_names()[i],"1")]]) && input[[paste0(params_names()[i],"1")]]){
-          #out <- list(out,list(ch[i],df[i]))
-          #print(out)
-        #}
-        
-        #if(!is.null(input[[paste0(params_names()[i],"1")]]) && !input[[paste0(params_names()[i],"1")]]){
-          #out <- list(out,list(ch[i],tx[i]))
-          #print(out)
-        #}
+    output$togparams <- renderUI({
+      
+    out <- c()
+    for(i in paste0(params_names(),"1")){
+      
+      isolate({
+        ind <- which(paste0(params_names(),"1")==i)
+        out <- c(out, ch()[ind])
+      })
+      
+      if(!is.null(input[[i]]) && input[[i]] == TRUE){
+        out <- c(out, df()[ind])
+      }
+      else{
+        out <- c(out, tx()[ind])
       }
       
-      #print(out)
-      return(out)
-    })
+    }
+
+    return(out)
+  })
   
   upcsv <- function(x){
     return(
