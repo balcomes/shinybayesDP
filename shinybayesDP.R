@@ -29,6 +29,7 @@ ui <- function(request) {
       uiOutput("colchoose"),
       uiOutput("params"),
       uiOutput("togparams"),
+      uiOutput("mu_t1"),
       HTML("<br><br><br>")
     ),
     dashboardBody(
@@ -609,52 +610,62 @@ server <- function(input, output, enableBookmarking = "url"){
     })
   })
   
-  output$togparams <- renderUI({
-    out <- list()
-    for(i in 1:length(params_names)){
-      
-      out <- list(out,ch()[i],tx()[i],df()[i])
-      
+  reactive({
+    ind <- 1
+    for(i in 1:length(params_names())){
+      pn <- params_names()[i]
+      output[[paste0("ch",ind)]] <- 
+        renderUI({
+          checkboxInput(paste0(pn,"_ch"),paste0(pn,"_ch"))
+        })
+      ind <- ind + 1
     }
-    print(out)
+  })
+  
+  output$togparams2 <- renderUI({
+    out <- list()
+    for(i in 1:length(params_names())){
+      if(!is.null(input[[paste0(params_names()[i],1)]]) && input[[paste0(params_names()[i],1)]]){
+        out <- list(out,tx()[i])
+      }
+      else{
+        out <- list(out,df()[i])
+      }
+    }
     return(out)
   })
 
-  ch <- reactive({
-    out <- list()
-    for(i in params_names()){
-      out <- list(out,do.call(checkboxInput,list(paste0(i,"1"),paste0(i,"1"))))
-    }
-    print(out)
-    return(out)
-  })
+  #ch <- reactive({
+  #  out <- list()
+  #  for(i in params_names()){
+  #    out <- list(out,do.call(checkboxInput,list(paste0(i,"1"),paste0(i,"1"))))
+  #  }
+  #  return(out)
+  #})
   
-  tx <- reactive({
-    out <- list()
-    for(i in params_names()){
-      do.call(conditionalPanel,
-              list(condition = paste0("output.",i,1) == FALSE,{
-                out <- list(out, do.call(textInput,list(paste0(i,"2"),
-                                              "Data Frame Toggle")))
-              }))
-    }
-    print(out)
-    return(out)
-    })
+  #tx <- reactive({
+  #  out <- list()
+  #  for(i in params_names()){
+  #    do.call(conditionalPanel,
+  #            list(condition = paste0("output.",i,1) == FALSE,{
+  #              out <- list(out, do.call(textInput,list(paste0(i,"2"),
+  #                                            "Data Frame Toggle")))
+  #            }))
+  #  }
+  #  return(out)
+  #  })
   
-  df <- reactive({
-    out <- list()
-    for(i in params_names()){
-      do.call(conditionalPanel,
-              list(condition = paste0("output.",i,1) == TRUE,{
-                out <- list(out, do.call(upcsv,list(paste0(i,"3"))))
-              }))
-    }
-    print(out)
-    return(out)
-    })
+  #df <- reactive({
+  #  out <- list()
+  #  for(i in params_names()){
+  #    do.call(conditionalPanel,
+  #            list(condition = paste0("output.",i,1) == TRUE,{
+  #              out <- list(out, do.call(upcsv,list(paste0(i,"3"))))
+  #            }))
+  #  }
+  #  return(out)
+  #  })
 
-      
   #tx <- renderUI({
   #  return(do.call(textInput,list(paste0(x,"2"),paste0(x,"2"))))
   #})
