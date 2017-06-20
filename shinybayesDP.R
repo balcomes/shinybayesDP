@@ -5,6 +5,16 @@ library(shinythemes)
 library(highlight)
 
 ui <- function(request) {
+  
+  ch <- lapply(paste0(letters,4),function(x){do.call(uiOutput,list(x))})
+  tx <- lapply(paste0(letters,5),function(x){do.call(uiOutput,list(x))})
+  df <- lapply(paste0(letters,6),function(x){do.call(uiOutput,list(x))})
+  
+  insert <- list()
+  for(i in 1:length(ch)){
+    insert <- list(insert,ch[i],tx[i],df[i])
+  }
+  
   dashboardPage(title = "bayesDP",
     dashboardHeader(title = "bayesDP"),
     dashboardSidebar(
@@ -29,7 +39,7 @@ ui <- function(request) {
       uiOutput("colchoose"),
       uiOutput("params"),
       uiOutput("togparams"),
-      uiOutput("mu_t1"),
+      insert,
       HTML("<br><br><br>")
     ),
     dashboardBody(
@@ -610,30 +620,43 @@ server <- function(input, output, enableBookmarking = "url"){
     })
   })
   
-  reactive({
-    ind <- 1
-    for(i in 1:length(params_names())){
-      pn <- params_names()[i]
-      output[[paste0("ch",ind)]] <- 
-        renderUI({
-          checkboxInput(paste0(pn,"_ch"),paste0(pn,"_ch"))
-        })
-      ind <- ind + 1
-    }
-  })
+
+  lapply(letters,function(x){output[[paste0(x,4)]] <- renderUI(
+    actionButton(paste0(x,1),paste0(x,1)))})
+  lapply(letters,function(x){output[[paste0(x,5)]] <- renderUI(
+    conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 0")),{
+      textInput(paste0(x,2),paste0(x,2))
+    }))})
+  lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
+    conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 1")),{
+      upcsv(paste0(x,3))
+    }))})
+
   
-  output$togparams2 <- renderUI({
-    out <- list()
-    for(i in 1:length(params_names())){
-      if(!is.null(input[[paste0(params_names()[i],1)]]) && input[[paste0(params_names()[i],1)]]){
-        out <- list(out,tx()[i])
-      }
-      else{
-        out <- list(out,df()[i])
-      }
-    }
-    return(out)
-  })
+  #reactive({
+  #  ind <- 1
+  #  for(i in 1:length(params_names())){
+  #    pn <- params_names()[i]
+  #    output[[paste0("ch",ind)]] <- 
+  #      renderUI({
+  #        checkboxInput(paste0(pn,"_ch"),paste0(pn,"_ch"))
+  #      })
+  #    ind <- ind + 1
+  #  }
+  #})
+  
+  #output$togparams2 <- renderUI({
+  #  out <- list()
+  #  for(i in 1:length(params_names())){
+  #    if(!is.null(input[[paste0(params_names()[i],1)]]) && input[[paste0(params_names()[i],1)]]){
+  #      out <- list(out,tx()[i])
+  #    }
+  #    else{
+  #      out <- list(out,df()[i])
+  #    }
+  #  }
+  #  return(out)
+  #})
 
   #ch <- reactive({
   #  out <- list()
