@@ -6,13 +6,14 @@ library(highlight)
 
 ui <- function(request) {
   
+  la <- lapply(paste0(letters,7),function(x){do.call(uiOutput,list(x))})
   ch <- lapply(paste0(letters,4),function(x){do.call(uiOutput,list(x))})
   tx <- lapply(paste0(letters,5),function(x){do.call(uiOutput,list(x))})
   df <- lapply(paste0(letters,6),function(x){do.call(uiOutput,list(x))})
   
   insert <- list()
   for(i in 1:length(ch)){
-    insert <- list(insert,ch[i],tx[i],df[i])
+    insert <- list(insert,hr(),la[i],br(),ch[i],tx[i],df[i])
   }
   
   dashboardPage(title = "bayesDP",
@@ -624,32 +625,38 @@ server <- function(input, output, enableBookmarking = "url"){
   
   reactive({print(pnl())})
   
+  lapply(letters,function(x){
+    output[[paste0(x,7)]] <- renderUI(
+    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
+      h4(params_names()[which(letters == x)])
+    }
+  )})
+  
   lapply(letters,function(x){output[[paste0(x,4)]] <- renderUI(
-    if(which(letters ==strsplit(x,1)) <= pnl()){
-      actionButton(paste0(x,1),paste0(x,1))
-    })})
+    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
+      actionButton(paste0(x,1),"Toggle Value or Data Frame")
+    }
+  )})
 
   lapply(letters,function(x){output[[paste0(x,5)]] <- renderUI(
-    if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
-    #if(which(letters ==strsplit(x,1)) <= pnl()){
-      #conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 0")),{
-        textInput(paste0(x,2),paste0(x,2))
-      })
-    })#})
+    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
+      if(!is.null(input[[paste0(x,1)]]) && input[[paste0(x,1)]] %% 2 == 0){
+          textInput(paste0(x,2))
+      }
+    })
+  })
   
   lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
-    #if(which(letters ==strsplit(x,1)) <= pnl()){
-    if(input[[paste0(x,1)]] %% 2 == 1){
-    #if(which(letters ==strsplit(x,1)) <= pnl()){
-      #conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 1")),{
+    if(which(letters == strsplit(x,1)) <= pnl()){
+      if(!is.null(input[[paste0(x,1)]]) && input[[paste0(x,1)]] %% 2 == 1){
         fileInput(paste0(x,2), "Upload .csv File",
                   accept = c(
                     "text/csv",
                     "text/comma-separated-values,text/plain",
                     ".csv"))
-      })
-    })#})
-  
+    }
+    })
+  })
 }
 
 shinyApp(ui, server, enableBookmarking = "url")
