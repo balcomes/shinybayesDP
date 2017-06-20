@@ -620,120 +620,35 @@ server <- function(input, output, enableBookmarking = "url"){
     })
   })
   
-
+  pnl <- reactive({length(params_names())})
+  
+  reactive({print(pnl())})
+  
   lapply(letters,function(x){output[[paste0(x,4)]] <- renderUI(
-    actionButton(paste0(x,1),paste0(x,1)))})
+    if(which(letters ==strsplit(x,1)) <= pnl()){
+      actionButton(paste0(x,1),paste0(x,1))
+    })})
+
   lapply(letters,function(x){output[[paste0(x,5)]] <- renderUI(
-    conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 0")),{
-      textInput(paste0(x,2),paste0(x,2))
-    }))})
+    if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
+    #if(which(letters ==strsplit(x,1)) <= pnl()){
+      #conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 0")),{
+        textInput(paste0(x,2),paste0(x,2))
+      })
+    })#})
+  
   lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
-    conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 1")),{
-      upcsv(paste0(x,3))
-    }))})
-
-  
-  #reactive({
-  #  ind <- 1
-  #  for(i in 1:length(params_names())){
-  #    pn <- params_names()[i]
-  #    output[[paste0("ch",ind)]] <- 
-  #      renderUI({
-  #        checkboxInput(paste0(pn,"_ch"),paste0(pn,"_ch"))
-  #      })
-  #    ind <- ind + 1
-  #  }
-  #})
-  
-  #output$togparams2 <- renderUI({
-  #  out <- list()
-  #  for(i in 1:length(params_names())){
-  #    if(!is.null(input[[paste0(params_names()[i],1)]]) && input[[paste0(params_names()[i],1)]]){
-  #      out <- list(out,tx()[i])
-  #    }
-  #    else{
-  #      out <- list(out,df()[i])
-  #    }
-  #  }
-  #  return(out)
-  #})
-
-  #ch <- reactive({
-  #  out <- list()
-  #  for(i in params_names()){
-  #    out <- list(out,do.call(checkboxInput,list(paste0(i,"1"),paste0(i,"1"))))
-  #  }
-  #  return(out)
-  #})
-  
-  #tx <- reactive({
-  #  out <- list()
-  #  for(i in params_names()){
-  #    do.call(conditionalPanel,
-  #            list(condition = paste0("output.",i,1) == FALSE,{
-  #              out <- list(out, do.call(textInput,list(paste0(i,"2"),
-  #                                            "Data Frame Toggle")))
-  #            }))
-  #  }
-  #  return(out)
-  #  })
-  
-  #df <- reactive({
-  #  out <- list()
-  #  for(i in params_names()){
-  #    do.call(conditionalPanel,
-  #            list(condition = paste0("output.",i,1) == TRUE,{
-  #              out <- list(out, do.call(upcsv,list(paste0(i,"3"))))
-  #            }))
-  #  }
-  #  return(out)
-  #  })
-
-  #tx <- renderUI({
-  #  return(do.call(textInput,list(paste0(x,"2"),paste0(x,"2"))))
-  #})
-  
-  #df <- renderUI({
-  #  return(do.call(upcsv,list(paste0(x,"3"))))
-  #})
-  
-  #lapply(pn$x,function(x){
-  #  return(list(
-  #    uiOutput("ch"),
-  #    uiOutput("dftx")
-  #  ))
-  #})
-  
-  #output$togparams2 <- renderUI({
-  #  
-  #})
-
-  #output$togparams2 <- renderUI({
-  #  out <- c()
-  #  for(i in paste0(params_names(),"1")){
-  #    
-  #    ind <- which(paste0(params_names(),"1")==i)
-  #    out <- c(out, ch()[ind])
-  #    
-  #    if(!is.null(input[[i]]) && input[[i]]){
-  #      out <- c(out, df()[ind])
-  #    }
-  #    else{
-  #      out <- c(out, tx()[ind])
-  #    }
-  #  }
-  #  return(out)
-  #})
-  
-  upcsv <- function(x){
-    return(
-      fileInput(paste0(x,"4"), "Upload .csv File",
-                accept = c(
-                  "text/csv",
-                  "text/comma-separated-values,text/plain",
-                  ".csv"))
-    )
-  }
+    #if(which(letters ==strsplit(x,1)) <= pnl()){
+    if(input[[paste0(x,1)]] %% 2 == 1){
+    #if(which(letters ==strsplit(x,1)) <= pnl()){
+      #conditionalPanel(condition = (paste0("input.", paste0(x,1), " % 2 == 1")),{
+        fileInput(paste0(x,2), "Upload .csv File",
+                  accept = c(
+                    "text/csv",
+                    "text/comma-separated-values,text/plain",
+                    ".csv"))
+      })
+    })#})
   
 }
 
