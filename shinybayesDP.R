@@ -13,7 +13,7 @@ ui <- function(request) {
   
   insert <- list()
   for(i in 1:length(ch)){
-    insert <- list(insert,hr(),la[i],br(),ch[i],tx[i],df[i])
+    insert <- list(insert,hr(),la[i],br(),ch[i],br(),tx[i],df[i])
   }
   
   dashboardPage(title = "bayesDP",
@@ -627,7 +627,7 @@ server <- function(input, output, enableBookmarking = "url"){
   
   lapply(letters,function(x){
     output[[paste0(x,7)]] <- renderUI(
-    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
+    if(which(letters == strsplit(x,1)) <= pnl()){
       h4(params_names()[which(letters == x)])
     }
   )})
@@ -638,17 +638,19 @@ server <- function(input, output, enableBookmarking = "url"){
     }
   )})
 
-  lapply(letters,function(x){output[[paste0(x,5)]] <- renderUI(
-    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
-      if(!is.null(input[[paste0(x,1)]]) && input[[paste0(x,1)]] %% 2 == 0){
-          textInput(paste0(x,2))
+  lapply(letters,function(x){
+    ind <- which(letters == strsplit(x,1))
+    output[[paste0(x,5)]] <- renderUI(
+    if(which(letters == strsplit(x,1)) <= pnl()){
+      if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
+          textInput(paste0(x,2), label = NULL, value = params()[ind])
       }
     })
   })
   
   lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
     if(which(letters == strsplit(x,1)) <= pnl()){
-      if(!is.null(input[[paste0(x,1)]]) && input[[paste0(x,1)]] %% 2 == 1){
+      if(input[[paste0(x,1)]] %% 2 == 1){
         fileInput(paste0(x,2), "Upload .csv File",
                   accept = c(
                     "text/csv",
