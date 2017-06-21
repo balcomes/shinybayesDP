@@ -3,6 +3,8 @@ library(shiny)
 library(shinydashboard)
 library(shinythemes)
 library(highlight)
+library(knitr)
+library(rmarkdown)
 
 ui <- function(request) {
   
@@ -572,10 +574,14 @@ server <- function(input, output, enableBookmarking = "url"){
   # Download reports.
   ##############################################################################
   
+  report <- reactive({
+    "Hello"
+  })
+  
   output$downloadReport <- downloadHandler(
     filename = function() {
       paste('my-report', sep = '.', switch(
-        input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
+        report(), PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },
     
