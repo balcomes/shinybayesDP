@@ -1,6 +1,15 @@
+Parameters
+
+```{r params, collapse=TRUE, echo=FALSE}
+p <- as.data.frame(matrix(params()))
+rownames(p) <- params_names()
+kable(p)
+
+```
+
 Print/Summary
 
-```{r one, collapse=TRUE}
+```{r print, collapse=TRUE, echo=FALSE}
 
 summary(final())
 
@@ -10,7 +19,7 @@ print(final())
 
 Plots
 
-```{r two, fig.height=5}
+```{r plots, fig.height=5, echo=FALSE}
 
 if(is.null(input$funccheck) || input$funccheck == FALSE){
   if(input$func == "bdpnormal" ||
@@ -36,6 +45,10 @@ if(is.null(input$funccheck) || input$funccheck == FALSE){
   if(input$func == "bdpsurvival"){
     plot(final(), type = "survival")
   }
+}
+
+if(!is.null(input$funccheck) && input$funccheck == TRUE){
+plot(final())
 }
 
 ```
