@@ -1,19 +1,43 @@
-Here is my regression model:
+Print/Summary
 
-```{r model, collapse=TRUE}
-options(digits = 4)
-fit <- lm(regFormula(), data = mtcars)
-b   <- coef(fit)
-summary(fit)
+```{r one, collapse=TRUE}
+
+summary(final())
+
+print(final())
+
 ```
 
-The fitting result is $mpg = `r b[1]` + `r b[2]``r input$x`$.
-Below is a scatter plot with the regression line.
+Plots
 
-```{r plot, fig.height=5}
-par(mar = c(4, 4, 1, 1))
-plot(regFormula(), data = mtcars, pch = 19, col = 'gray')
-abline(fit, col = 'red', lwd = 2)
+```{r two, fig.height=5}
+
+if(is.null(input$funccheck) || input$funccheck == FALSE){
+  if(input$func == "bdpnormal" ||
+     input$func == "bdpbinomial" ||
+     input$func == "bdpsurvival"){
+    plot(final(), type = "discount")
+  }
+}
+
+if(is.null(input$funccheck) || input$funccheck == FALSE){
+  if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+    plot(final(), type = "posteriors")
+  }
+}
+
+if(is.null(input$funccheck) || input$funccheck == FALSE){
+  if(input$func == "bdpnormal" || input$func == "bdpbinomial"){
+    plot(final(), type = "density")
+  }
+}
+
+if(is.null(input$funccheck) || input$funccheck == FALSE){
+  if(input$func == "bdpsurvival"){
+    plot(final(), type = "survival")
+  }
+}
+
 ```
 
 

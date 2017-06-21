@@ -581,7 +581,7 @@ server <- function(input, output, enableBookmarking = "url"){
   output$downloadReport <- downloadHandler(
     filename = function() {
       paste('my-report', sep = '.', switch(
-        report(), PDF = 'pdf', HTML = 'html', Word = 'docx'
+        input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },
     
