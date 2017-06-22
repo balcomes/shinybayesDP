@@ -635,38 +635,55 @@ server <- function(input, output, enableBookmarking = "url"){
   
   lapply(letters,function(x){
     output[[paste0(x,7)]] <- renderUI(
-    if(which(letters == strsplit(x,1)) <= pnl()){
-      h4(params_names()[which(letters == x)])
-    }
-  )})
+      conditionalPanel(
+        condition = "secret == 96",
+        if(secret$x == 1){
+          if(which(letters == strsplit(x,1)) <= pnl()){
+            h4(params_names()[which(letters == x)])
+          }
+        }
+  ))})
   
   lapply(letters,function(x){output[[paste0(x,4)]] <- renderUI(
-    if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
-      actionButton(paste0(x,1),"Toggle Value or Data Frame")
-    }
-  )})
+    conditionalPanel(
+      condition = "secret == 96",
+      if(secret$x == 1){
+        if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
+          actionButton(paste0(x,1),"Toggle Value or Data Frame")
+        }
+      }
+  ))})
 
   lapply(letters,function(x){
     ind <- which(letters == strsplit(x,1))
     output[[paste0(x,5)]] <- renderUI(
-    if(which(letters == strsplit(x,1)) <= pnl()){
-      if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
-          textInput(paste0(x,2), label = NULL, value = params()[ind])
-      }
-    })
-  })
+      conditionalPanel(
+        condition = "secret == 96",
+        if(secret$x == 1){
+          if(which(letters == strsplit(x,1)) <= pnl()){
+            if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
+                textInput(paste0(x,2), label = "Input Value", value = params()[ind])
+            }
+          }
+        }
+    ))})
   
   lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
-    if(which(letters == strsplit(x,1)) <= pnl()){
-      if(input[[paste0(x,1)]] %% 2 == 1){
-        fileInput(paste0(x,2), "Upload .csv File",
-                  accept = c(
-                    "text/csv",
-                    "text/comma-separated-values,text/plain",
-                    ".csv"))
-    }
-    })
-  })
+    conditionalPanel(
+      condition = "secret == 96",
+      if(secret$x == 1){
+        if(which(letters == strsplit(x,1)) <= pnl()){
+          if(input[[paste0(x,1)]] %% 2 == 1){
+            fileInput(paste0(x,2), "Upload .csv File",
+                      accept = c(
+                        "text/csv",
+                        "text/comma-separated-values,text/plain",
+                        ".csv"))
+          }
+        }
+      }
+    ))})
+  
 }
 
 shinyApp(ui, server, enableBookmarking = "url")
