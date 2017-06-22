@@ -1,7 +1,19 @@
 Parameters
 
 ```{r params, collapse=TRUE, echo=FALSE}
-p <- as.data.frame(matrix(params()))
+
+final <- NULL
+skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
+for(i in params_names()){
+  final <- c(final, input[[i]])
+  if(i %in% names(which(lapply(params(),
+                               function(x){class(x)=="character"})==TRUE))){
+    j <- which(params_names()==i)
+    final[j-skip]<- paste0("'",final[j-skip],"'")
+  }
+}
+
+p <- as.data.frame(matrix(final))
 rownames(p) <- params_names()
 colnames(p) <- "Value"
 kable(p)
