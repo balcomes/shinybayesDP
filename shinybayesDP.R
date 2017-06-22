@@ -641,15 +641,12 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   output$dev <- renderUI({
-    conditionalPanel(
-      condition = "secret == 96",
-    
     if(secret$x == 1){
       menuItem("Dev Tool", icon = icon("key"),
                checkboxInput("funccheck", "Use your own function"),
                uiOutput("funcname"),
                uiOutput("checks"))
-    })
+    }
   })
   
   pnl <- reactive({length(params_names())})
@@ -658,30 +655,24 @@ server <- function(input, output, enableBookmarking = "url"){
   
   lapply(letters,function(x){
     output[[paste0(x,7)]] <- renderUI(
-      conditionalPanel(
-        condition = "secret == 96",
         if(secret$x == 1){
           if(which(letters == strsplit(x,1)) <= pnl()){
             h4(params_names()[which(letters == x)])
           }
         }
-  ))})
+  )})
   
   lapply(letters,function(x){output[[paste0(x,4)]] <- renderUI(
-    conditionalPanel(
-      condition = "secret == 96",
       if(secret$x == 1){
         if(!is.null(pnl()) && which(letters == strsplit(x,1)) <= pnl()){
           actionButton(paste0(x,1),"Toggle Value or Data Frame")
         }
       }
-  ))})
+  )})
 
   lapply(letters,function(x){
     ind <- which(letters == strsplit(x,1))
     output[[paste0(x,5)]] <- renderUI(
-      conditionalPanel(
-        condition = "secret == 96",
         if(secret$x == 1){
           if(which(letters == strsplit(x,1)) <= pnl()){
             if(is.null(input[[paste0(x,1)]]) || input[[paste0(x,1)]] %% 2 == 0){
@@ -689,11 +680,9 @@ server <- function(input, output, enableBookmarking = "url"){
             }
           }
         }
-    ))})
+    )})
   
   lapply(letters,function(x){output[[paste0(x,6)]] <- renderUI(
-    conditionalPanel(
-      condition = "secret == 96",
       if(secret$x == 1){
         if(which(letters == strsplit(x,1)) <= pnl()){
           if(input[[paste0(x,1)]] %% 2 == 1){
@@ -705,7 +694,7 @@ server <- function(input, output, enableBookmarking = "url"){
           }
         }
       }
-    ))})
+    )})
   
 }
 
