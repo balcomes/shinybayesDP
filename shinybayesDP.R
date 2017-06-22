@@ -53,9 +53,9 @@ ui <- function(request) {
                                   max-width: 100% !important;}"))),
         tags$script('$(document).on("keypress", function (e) {
                     Shiny.onInputChange("secret", e.which);});'),
-        #tags$style(type = "text/css",
-        #           ".shiny-output-error { visibility: hidden; }",
-        #           ".shiny-output-error:before { visibility: hidden; }"),
+        tags$style(type = "text/css",
+                   ".shiny-output-error { visibility: hidden; }",
+                   ".shiny-output-error:before { visibility: hidden; }"),
         box(width = "100%", uiOutput("plottabs"))),
       hr()
     )
@@ -182,18 +182,16 @@ server <- function(input, output, enableBookmarking = "url"){
 
   final <- reactive({
     
-    if(!is.null(input$func) &&
-       !is.null(params()) &&
+    if(!is.null(params()) &&
        !is.null(params_names())
        ){
       
       if(!is.null(input$funccheck) &&
-         !is.null(params()) &&
          input$funccheck == TRUE){
         myfunc <- input$anyfunc
       }
-      if((is.null(input$funccheck) || input$funccheck == FALSE) &&
-         !is.null(params())){
+      if((is.null(input$funccheck) ||
+          input$funccheck == FALSE)){
         myfunc <- input$func
       }
       
@@ -214,7 +212,6 @@ server <- function(input, output, enableBookmarking = "url"){
          !is.null(myfunc)){
       
         if(!is.null(input$funccheck) &&
-           !is.null(params()) &&
            input$funccheck == TRUE){
           
           if("data" %in% params_names()  &&
@@ -234,38 +231,27 @@ server <- function(input, output, enableBookmarking = "url"){
             )
           }
           else{
-            if(!is.null(input$Formula) &&
-               !is.null(updata$x)){
-              return(
-                eval(parse(text = paste0(myfunc,"(",
-                                         paste0(final,collapse = ",")
-                                         ,")")))
-              )
-            }
-          }
-        }
-        else{
-    
-          if(!is.null(myfunc) &&
-             !is.null(params()) &&
-             !is.null(params_names()) &&
-             !is.null(myfunc) &&
-             !is.null(final) &&
-             myfunc %in% c("bdpnormal","bdpbinomial")){
             return(
               eval(parse(text = paste0(myfunc,"(",
                                        paste0(final,collapse = ",")
                                        ,")")))
             )
           }
-          if(!is.null(input$func) &&
-             !is.null(params()) &&
-             (input$func == "bdpsurvival" || input$func == "bdpregression") &&
+        }
+        else{
+    
+          if(myfunc %in% c("bdpnormal","bdpbinomial")){
+            return(
+              eval(parse(text = paste0(myfunc,"(",
+                                       paste0(final,collapse = ",")
+                                       ,")")))
+            )
+          }
+          if((input$func == "bdpsurvival" || input$func == "bdpregression") &&
              length(input$status) > 0 &&
              length(input$time) > 0 &&
              length(input$historical) > 0 &&
              length(input$treatment) > 0 &&
-             length(input$func) > 0 &&
              length(survchosen()) > 0){
             return(
                 eval(parse(text = paste0(myfunc,
@@ -605,7 +591,7 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$downloadReport <- downloadHandler(
     filename = function() {
-      paste('my-report', sep = '.', switch(
+      paste('bayesDP-report', sep = '.', switch(
         input$format, PDF = 'pdf', HTML = 'html', Word = 'docx'
       ))
     },

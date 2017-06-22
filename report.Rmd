@@ -3,6 +3,7 @@ Parameters
 ```{r params, collapse=TRUE, echo=FALSE}
 p <- as.data.frame(matrix(params()))
 rownames(p) <- params_names()
+colnames(p) <- "Value"
 kable(p)
 
 ```
@@ -11,7 +12,7 @@ Print/Summary
 
 ```{r print, collapse=TRUE, echo=FALSE}
 
-summary(final())
+#summary(final())
 
 print(final())
 
