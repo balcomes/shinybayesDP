@@ -53,9 +53,9 @@ ui <- function(request) {
                                   max-width: 100% !important;}"))),
         tags$script('$(document).on("keypress", function (e) {
                     Shiny.onInputChange("secret", e.which);});'),
-        tags$style(type = "text/css",
-                   ".shiny-output-error { visibility: hidden; }",
-                   ".shiny-output-error:before { visibility: hidden; }"),
+        #tags$style(type = "text/css",
+        #           ".shiny-output-error { visibility: hidden; }",
+        #           ".shiny-output-error:before { visibility: hidden; }"),
         box(width = "100%", uiOutput("plottabs"))),
       hr()
     )
@@ -181,32 +181,46 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   final <- reactive({
-    if(!is.null(input$func)){
-      final <- c()
+    
+    if(!is.null(input$func) &&
+       !is.null(params()) &&
+       !is.null(params_names())
+       ){
       
-      skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
-      
-      for(i in params_names()){
-        final <- c(final, input[[i]])
-        if(i %in% names(which(lapply(params(),
-                                     function(x){class(x)=="character"})==TRUE))){
-          j <- which(params_names()==i)
-          final[j-skip]<- paste0("'",final[j-skip],"'")
-        }
-      }
-      
-      if(!is.null(input$funccheck) && input$funccheck == TRUE){
+      if(!is.null(input$funccheck) &&
+         !is.null(params()) &&
+         input$funccheck == TRUE){
         myfunc <- input$anyfunc
       }
-      else{
+      if((is.null(input$funccheck) || input$funccheck == FALSE) &&
+         !is.null(params())){
         myfunc <- input$func
       }
       
-      if(length(final > 0)){
+      final <- NULL
+      if(!is.null(myfunc)){
+        skip <- ("data" %in% params_names()) + ("formula" %in% params_names())
+        for(i in params_names()){
+          final <- c(final, input[[i]])
+          if(i %in% names(which(lapply(params(),
+                                       function(x){class(x)=="character"})==TRUE))){
+            j <- which(params_names()==i)
+            final[j-skip]<- paste0("'",final[j-skip],"'")
+          }
+        }
+      }
+
+      if(!is.null(final) &&
+         !is.null(myfunc)){
       
-        if(!is.null(input$funccheck) && input$funccheck == TRUE){
+        if(!is.null(input$funccheck) &&
+           !is.null(params()) &&
+           input$funccheck == TRUE){
           
-          if("data" %in% params_names()  && "formula" %in% params_names()){
+          if("data" %in% params_names()  &&
+             "formula" %in% params_names() &&
+             !is.null(input$Formula) &&
+             !is.null(updata$x)){
             return(
               eval(parse(text = paste0(myfunc,
                                        "(",
@@ -220,40 +234,49 @@ server <- function(input, output, enableBookmarking = "url"){
             )
           }
           else{
-            return(
-              eval(parse(text = paste0(myfunc,"(",
-                                       paste0(final,collapse = ",")
-                                       ,")")))
-            )
+            if(!is.null(input$Formula) &&
+               !is.null(updata$x)){
+              return(
+                eval(parse(text = paste0(myfunc,"(",
+                                         paste0(final,collapse = ",")
+                                         ,")")))
+              )
+            }
           }
         }
         else{
     
-          if(!is.null(input$func) && input$func %in% c("bdpnormal","bdpbinomial")){
+          if(!is.null(myfunc) &&
+             !is.null(params()) &&
+             !is.null(params_names()) &&
+             !is.null(myfunc) &&
+             !is.null(final) &&
+             myfunc %in% c("bdpnormal","bdpbinomial")){
             return(
               eval(parse(text = paste0(myfunc,"(",
                                        paste0(final,collapse = ",")
                                        ,")")))
             )
           }
-          if(!is.null(input$func) && (input$func == "bdpsurvival" || input$func == "bdpregression") &&
+          if(!is.null(input$func) &&
+             !is.null(params()) &&
+             (input$func == "bdpsurvival" || input$func == "bdpregression") &&
              length(input$status) > 0 &&
              length(input$time) > 0 &&
              length(input$historical) > 0 &&
              length(input$treatment) > 0 &&
              length(input$func) > 0 &&
              length(survchosen()) > 0){
-          #if("data" %in% params_names()  && "formula" %in% params_names()){
             return(
-              eval(parse(text = paste0(myfunc,
-                                              "(",
-                                              "formula = ",
-                                              input$Formula,
-                                              ",",
-                                              "data = survchosen(),",
-                                              paste0(final,collapse = ","),
-                                              ")",
-                                              collapse = ",")))
+                eval(parse(text = paste0(myfunc,
+                                                "(",
+                                                "formula = ",
+                                                input$Formula,
+                                                ",",
+                                                "data = survchosen(),",
+                                                paste0(final,collapse = ","),
+                                                ")",
+                                                collapse = ",")))
             )
           }
         }

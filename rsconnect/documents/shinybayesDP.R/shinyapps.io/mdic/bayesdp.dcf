@@ -1,0 +1,11 @@
+name: bayesdp
+title: bayesDP
+account: mdic
+server: shinyapps.io
+appId: 176536
+bundleId: 877836
+url: https://mdic.shinyapps.io/bayesdp/
+when: 1498114983.83665
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|gen.R|my-report.html|README.md|report.html|toggle.R
