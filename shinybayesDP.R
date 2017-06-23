@@ -6,6 +6,7 @@ library(highlight)
 library(knitr)
 library(rmarkdown)
 library(urlshorteneR)
+library(httr)
 library(htmltools)
 
 ui <- function(request) {
