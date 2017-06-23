@@ -5,6 +5,8 @@ library(shinythemes)
 library(highlight)
 library(knitr)
 library(rmarkdown)
+library(urlshorteneR)
+library(htmltools)
 
 ui <- function(request) {
   
@@ -392,7 +394,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel("Summary", verbatimTextOutput("summary")),
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
             tabPanel("Source", uiOutput("src")),
             tabPanel("Data", dataTableOutput("contents"))
           )
@@ -406,7 +408,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel("Summary", verbatimTextOutput("summary")),
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
             tabPanel("Source", uiOutput("src")),
             tabPanel("Data", dataTableOutput("contents"))
           )
@@ -421,7 +423,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
             tabPanel(density()$plot$labels$title, plotOutput("density")),
-            tabPanel("Help", uiOutput("vig")),
+            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
             tabPanel("Source", uiOutput("src"))
           )
         )
