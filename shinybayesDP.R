@@ -5,8 +5,8 @@ library(shinythemes)
 library(highlight)
 library(knitr)
 library(rmarkdown)
-library(urlshorteneR)
-library(httr)
+#library(urlshorteneR)
+#library(httr)
 library(htmltools)
 
 ui <- function(request) {
