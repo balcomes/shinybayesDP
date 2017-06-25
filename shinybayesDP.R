@@ -45,7 +45,7 @@ ui <- function(request) {
         uiOutput("funcdrop"),
         uiOutput("up"),
         uiOutput("writeformula"),
-        uiOutput("colchoose"),
+        uiOutput("colboth"),
         uiOutput("params"),
         uiOutput("togparams"),
         insert,
@@ -380,17 +380,7 @@ server <- function(input, output, enableBookmarking = "url"){
   ##############################################################################
   
   output$contents <- renderDataTable({updata$x})
-  
-  #output$devcontents <- lapply(params_names(),function(x){
-  #  do.call(tabPanel,list(x,do.call(dataTableOutput,list(x, label = x, value = params()[[x]]))))
-  #})
-    
-  
-  #lapply(params_names(),function(x){
-  #  do.call(renderDataTable(),list(x, label = x, value = params()[[x]]))
-  #})
-    
-    
+
   output$devcontents <- renderDataTable({
     as.data.frame(eval(parse(text = input[[params_names()[1]]])))
   })
@@ -409,7 +399,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel("Summary", verbatimTextOutput("summary")),
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
+            tabPanel("Help", uiOutput("vig")),
             tabPanel("Source", uiOutput("src")),
             tabPanel("Data", dataTableOutput("contents"))
           )
@@ -423,7 +413,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel("Summary", verbatimTextOutput("summary")),
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
+            tabPanel("Help", uiOutput("vig")),
             tabPanel("Source", uiOutput("src")),
             tabPanel("Data", dataTableOutput("contents"))
           )
@@ -438,7 +428,7 @@ server <- function(input, output, enableBookmarking = "url"){
             tabPanel(discount()$plot$labels$title, plotOutput("discount")),
             tabPanel(posteriors()$plot$labels$title, plotOutput("posteriors")),
             tabPanel(density()$plot$labels$title, plotOutput("density")),
-            tabPanel("Help", tags$iframe(style="height:400px; width:100%; scrolling=yes"), uiOutput("vig")),
+            tabPanel("Help", uiOutput("vig")),
             tabPanel("Source", uiOutput("src"))
           )
         )
@@ -579,7 +569,7 @@ server <- function(input, output, enableBookmarking = "url"){
   ##############################################################################
   
   output$colchoose <- renderUI({
-    if(!is.null(input$func) && (input$func == "bdpsurvival" || input$func == "bdpregression") &&
+    if(!is.null(input$func) && (input$func == "bdpsurvival") &&
        ((is.null(input$funccheck)  || input$funccheck == FALSE))){
       survcols <- c("status", "time", "historical", "treatment")
       
@@ -588,15 +578,54 @@ server <- function(input, output, enableBookmarking = "url"){
       out <- lapply(survcols,function(x){
         do.call(
           selectInput,list(x,
-                           paste0("Select ",x),
+                           paste0("Select ",x, " column"),
                            choices = survnames,
                            selected = x)
         )
       })
-      menuItem("Column Select", icon = icon("columns"), out)
+      return(out)
+    }
+    if(!is.null(input$func) && (input$func == "bdpregression") &&
+       ((is.null(input$funccheck)  || input$funccheck == FALSE))){
+      survcols <- c("outcome", "treatment", "historical")
+      
+      survnames <- names(updata$x)
+
+      out <- lapply(survcols,function(x){
+        do.call(
+          selectInput,list(x,
+                           paste0("Select ",x, " column"),
+                           choices = survnames,
+                           selected = x)
+        )
+      })
+
+      return(out)
     }
   })
   
+  output$colcheckboxes <- renderUI({
+  
+    if(!is.null(input$func) && (input$func == "bdpregression") &&
+       ((is.null(input$funccheck)  || input$funccheck == FALSE))){
+    
+      covnames <- setdiff(names(updata$x),c(input$outcome,
+                                            input$treatment,
+                                            input$historical))
+      out <- do.call(checkboxGroupInput,
+                     list("icons", "Select Covariate Column(s):",
+                          choiceNames = covnames,
+                          choiceValues = covnames))
+    }
+    return(out)
+  })
+  
+  output$colboth <- renderUI({
+    menuItem("Column Select", icon = icon("columns"),
+             uiOutput("colchoose"),
+             uiOutput("colcheckboxes")
+    )
+  })
   
   ##############################################################################
   # Download reports.
