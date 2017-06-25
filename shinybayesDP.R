@@ -52,7 +52,7 @@ ui <- function(request) {
         HTML("<br><br><br>"),
         tags$style(".skin-blue .sidebar a { color: #444; }"),
         tags$style(".skin-blue .sidebar a { color: #444; }"),
-        tags$style(".skin-blue .main-sidebar { background-color: #c4c4ef; }")
+        tags$style(".skin-blue .main-sidebar { background-color: #8dbcd8; }")
       ),
       dashboardBody(
         fluidPage(
