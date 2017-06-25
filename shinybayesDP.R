@@ -21,47 +21,61 @@ ui <- function(request) {
     insert <- list(insert,hr(),la[i],br(),ch[i],br(),tx[i],df[i])
   }
   
-  dashboardPage(title = "bayesDP",
-    dashboardHeader(title = "bayesDP"),
-    dashboardSidebar(
-      tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
-      br(),
-      tags$div(class = "header", checked = NA,
-               tags$a(href = "https://cran.r-project.org/package=bayesDP",
-                      "View help files and download the package from CRAN")),
-      br(),
-      tags$div(class = "header", checked = NA,
-               tags$a(href = "https://github.com/balcomes/bayesDP",
-                      "Development version of bayesDP")),
-      br(),
-      bookmarkButton(),
-      br(),
-      br(),
-      downloadButton("downloadReport", "Generate Report"),
-      radioButtons('format', 'Document format', c('HTML', 'PDF', 'Word'),
-                   inline = TRUE),
-      uiOutput("dev"),
-      uiOutput("funcdrop"),
-      uiOutput("up"),
-      uiOutput("writeformula"),
-      uiOutput("colchoose"),
-      uiOutput("params"),
-      uiOutput("togparams"),
-      insert,
-      HTML("<br><br><br>")
+  tagList(
+    dashboardPage(title = "bayesDP",
+      dashboardHeader(title = "bayesDP"),
+      dashboardSidebar(
+        tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
+        br(),
+        tags$div(class = "header", checked = NA,
+                 tags$a(href = "https://cran.r-project.org/package=bayesDP",
+                        "View help files and download the package from CRAN")),
+        br(),
+        tags$div(class = "header", checked = NA,
+                 tags$a(href = "https://github.com/balcomes/bayesDP",
+                        "Development version of bayesDP")),
+        br(),
+        bookmarkButton(),
+        br(),
+        br(),
+        downloadButton("downloadReport", "Generate Report"),
+        radioButtons('format', 'Document format', c('HTML', 'PDF', 'Word'),
+                     inline = TRUE),
+        uiOutput("dev"),
+        uiOutput("funcdrop"),
+        uiOutput("up"),
+        uiOutput("writeformula"),
+        uiOutput("colchoose"),
+        uiOutput("params"),
+        uiOutput("togparams"),
+        insert,
+        HTML("<br><br><br>"),
+        tags$style(".skin-blue .sidebar a { color: #444; }"),
+        tags$style(".skin-blue .sidebar a { color: #444; }"),
+        tags$style(".skin-blue .main-sidebar { background-color: #c4c4ef; }")
+      ),
+      dashboardBody(
+        fluidPage(
+          tags$head(tags$style(HTML("body {width: 100% !important;
+                                    max-width: 100% !important;}"))),
+          tags$script('$(document).on("keypress", function (e) {
+                      Shiny.onInputChange("secret", e.which);});'),
+          tags$style(type = "text/css",
+                     ".shiny-output-error { visibility: hidden; }",
+                     ".shiny-output-error:before { visibility: hidden; }"),
+          box(width = "100%", uiOutput("plottabs"))),
+        hr()
+      )
     ),
-    dashboardBody(
-      fluidPage(
-        tags$head(tags$style(HTML("body {width: 100% !important;
-                                  max-width: 100% !important;}"))),
-        tags$script('$(document).on("keypress", function (e) {
-                    Shiny.onInputChange("secret", e.which);});'),
-        tags$style(type = "text/css",
-                   ".shiny-output-error { visibility: hidden; }",
-                   ".shiny-output-error:before { visibility: hidden; }"),
-        box(width = "100%", uiOutput("plottabs"))),
-      hr()
-    )
+    tags$footer(style =
+                 "position:absolute;
+                  bottom:0;
+                  width:100%;
+                  height:25px;
+                  color: black;
+                  padding: 10px;
+                  background-color: #408EBA;
+                  z-index: 1000;")
   )
 }
 
