@@ -145,23 +145,34 @@ server <- function(input, output, enableBookmarking = "url"){
   
   observe({
     input$example_button
-    # Two-arm trial (OPC) example
-    # Simulate survival data for a two-arm trial
-    time   <- c(rexp(50, rate=1/20), # Current treatment
-                rexp(50, rate=1/10), # Current control
-                rexp(50, rate=1/30), # Historical treatment
-                rexp(50, rate=1/5))  # Historical control
-    status <- rexp(200, rate=1/40)
-    status <- ifelse(time < status, 1, 0)
-    
-    # Collect data into a dataframe
-    updata$x <- data.frame(status     = status,
-               time       = time,
-               historical = c(rep(0,100),rep(1,100)),
-               treatment  = c(rep(1,50),
-                              rep(0,50),
-                              rep(1,50),
-                              rep(0,50)))
+    if(!is.null(input$func) && (is.null(input$funccheck) || input$funccheck == FALSE)){
+      if(input$func == "bdpsurvival"){
+        # Two-arm trial (OPC) example
+        # Simulate survival data for a two-arm trial
+        time   <- c(rexp(50, rate = 1/20), # Current treatment
+                    rexp(50, rate = 1/10), # Current control
+                    rexp(50, rate = 1/30), # Historical treatment
+                    rexp(50, rate = 1/5))  # Historical control
+        status <- rexp(200, rate = 1/40)
+        status <- ifelse(time < status, 1, 0)
+        
+        # Collect data into a dataframe
+        updata$x <- data.frame(status     = status,
+                               time       = time,
+                               historical = c(rep(0, 100),rep(1, 100)),
+                               treatment  = c(rep(1, 50),
+                                              rep(0, 50),
+                                              rep(1, 50),
+                                              rep(0, 50)))
+      }
+      
+      if(input$func == "bdpregression"){
+        updata$x = data.frame(
+        outcome    = c(rep(1, 50), rep(0, 50)),
+        treatment  = c(rnorm(50), rnorm(50)),
+        historical = c(rnorm(50), rnorm(50) + 0.2))
+      }
+    }
   })
   
   observe({
@@ -191,10 +202,22 @@ server <- function(input, output, enableBookmarking = "url"){
   })
 
   survchosen <- reactive({
-    data.frame(status     = updata$x[[input$status]],
-               time       = updata$x[[input$time]],
-               historical = updata$x[[input$historical]],
-               treatment  = updata$x[[input$treatment]])
+    if(input$func == "bdpsurvival"){
+      return(
+        data.frame(status     = updata$x[[input$status]],
+                   time       = updata$x[[input$time]],
+                   historical = updata$x[[input$historical]],
+                   treatment  = updata$x[[input$treatment]])
+      )
+    }
+    
+    if(input$func == "bdpregression"){
+      return(
+        data.frame(historical = updata$x[[input$historical]],
+                   treatment  = updata$x[[input$treatment]],
+                   outcome    = updata$x[[input$outcome]])
+      )
+    }
   })
 
   final <- reactive({
@@ -411,9 +434,9 @@ server <- function(input, output, enableBookmarking = "url"){
           tabsetPanel(
             tabPanel("Print", verbatimTextOutput("print")),
             tabPanel("Summary", verbatimTextOutput("summary")),
-            tabPanel(discount()$plot$labels$title, plotOutput("discount")),
-            tabPanel(survival()$plot$labels$title, plotOutput("survival")),
-            tabPanel("Help", uiOutput("vig")),
+            #tabPanel(discount()$plot$labels$title, plotOutput("discount")),
+            #tabPanel(survival()$plot$labels$title, plotOutput("survival")),
+            #tabPanel("Help", uiOutput("vig")),
             tabPanel("Source", uiOutput("src")),
             tabPanel("Data", dataTableOutput("contents"))
           )
@@ -555,15 +578,28 @@ server <- function(input, output, enableBookmarking = "url"){
   
   output$writeformula <- renderUI({
     if("formula" %in% params_names()){
-      menuItem("Formula",
-               icon = icon("bar-chart-o"),
-      textInput("Formula",
-                label = "Formula",
-                value = "Surv(time, status) ~ historical + treatment"))
+      if(input$func == "bdpsurvival"){
+        return(
+          menuItem("Formula",
+                   icon = icon("bar-chart-o"),
+          textInput("Formula",
+                    label = "Formula",
+                    value = "Surv(time, status) ~ historical + treatment"))
+        )
+      }
+      if(input$func == "bdpregression"){
+        return(
+          menuItem("Formula",
+                   icon = icon("bar-chart-o"),
+                   textInput("Formula",
+                             label = "Formula",
+                             value = "outcome ~ treatment + historical"))
+        )
+      }
     }
   })
   
-  
+  outcome ~ treatment + historical
   ##############################################################################
   # bdpsurvival and bdpregression specific dropdowns for column selection. 
   ##############################################################################
@@ -571,6 +607,7 @@ server <- function(input, output, enableBookmarking = "url"){
   output$colchoose <- renderUI({
     if(!is.null(input$func) && (input$func == "bdpsurvival") &&
        ((is.null(input$funccheck)  || input$funccheck == FALSE))){
+      
       survcols <- c("status", "time", "historical", "treatment")
       
       survnames <- names(updata$x)
