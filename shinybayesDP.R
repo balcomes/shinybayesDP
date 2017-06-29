@@ -168,9 +168,13 @@ server <- function(input, output, enableBookmarking = "url"){
       
       if(input$func == "bdpregression"){
         updata$x = data.frame(
-        outcome    = c(rep(1, 50), rep(0, 50)),
-        treatment  = c(rnorm(50), rnorm(50)),
-        historical = c(rnorm(50), rnorm(50) + 0.2))
+        historical    = c(rep(1, 50), rep(0, 50)),
+        treatment     = c(sample(0:1,50,replace=TRUE), sample(0:1,50,replace=TRUE)),
+        outcome       = c(rnorm(50), rnorm(50) + 0.2),
+        red           = c(rnorm(50), rnorm(50) + 0.4),
+        green         = c(rnorm(50), rnorm(50) + 0.6),
+        blue          = c(rnorm(50), rnorm(50) + 0.8)
+        )
       }
     }
   })
@@ -288,10 +292,10 @@ server <- function(input, output, enableBookmarking = "url"){
             )
           }
           if((input$func == "bdpsurvival" || input$func == "bdpregression") &&
-             length(input$status) > 0 &&
-             length(input$time) > 0 &&
-             length(input$historical) > 0 &&
-             length(input$treatment) > 0 &&
+             #length(input$status) > 0 &&
+             #length(input$time) > 0 &&
+             #length(input$historical) > 0 &&
+             #length(input$treatment) > 0 &&
              length(survchosen()) > 0){
             return(
                 eval(parse(text = paste0(myfunc,
