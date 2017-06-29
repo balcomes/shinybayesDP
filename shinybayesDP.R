@@ -169,8 +169,8 @@ server <- function(input, output, enableBookmarking = "url"){
       if(input$func == "bdpregression"){
         updata$x = data.frame(
         historical    = c(rep(1, 50), rep(0, 50)),
-        treatment     = c(sample(0:1,50,replace=TRUE), sample(0:1,50,replace=TRUE)),
-        outcome       = c(rnorm(50), rnorm(50) + 0.2),
+        x1            = c(sample(0:1,50,replace=TRUE), sample(0:1,50,replace=TRUE)),
+        y             = c(rnorm(50), rnorm(50) + 0.2),
         red           = c(rnorm(50), rnorm(50) + 0.4),
         green         = c(rnorm(50), rnorm(50) + 0.6),
         blue          = c(rnorm(50), rnorm(50) + 0.8)
@@ -218,8 +218,8 @@ server <- function(input, output, enableBookmarking = "url"){
     if(input$func == "bdpregression"){
       return(
         data.frame(historical = updata$x[[input$historical]],
-                   treatment  = updata$x[[input$treatment]],
-                   outcome    = updata$x[[input$outcome]])
+                   x1   = updata$x[[input$x1]],
+                   y    = updata$x[[input$y]])
       )
     }
   })
@@ -597,13 +597,12 @@ server <- function(input, output, enableBookmarking = "url"){
                    icon = icon("bar-chart-o"),
                    textInput("Formula",
                              label = "Formula",
-                             value = "outcome ~ treatment + historical"))
+                             value = "y ~ x1 + historical"))
         )
       }
     }
   })
-  
-  outcome ~ treatment + historical
+
   ##############################################################################
   # bdpsurvival and bdpregression specific dropdowns for column selection. 
   ##############################################################################
@@ -628,7 +627,7 @@ server <- function(input, output, enableBookmarking = "url"){
     }
     if(!is.null(input$func) && (input$func == "bdpregression") &&
        ((is.null(input$funccheck)  || input$funccheck == FALSE))){
-      survcols <- c("outcome", "treatment", "historical")
+      survcols <- c("y", "x1", "historical")
       
       survnames <- names(updata$x)
 
@@ -650,8 +649,8 @@ server <- function(input, output, enableBookmarking = "url"){
     if(!is.null(input$func) && (input$func == "bdpregression") &&
        ((is.null(input$funccheck)  || input$funccheck == FALSE))){
     
-      covnames <- setdiff(names(updata$x),c(input$outcome,
-                                            input$treatment,
+      covnames <- setdiff(names(updata$x),c(input$y,
+                                            input$x1,
                                             input$historical))
       out <- do.call(checkboxGroupInput,
                      list("icons", "Select Covariate Column(s):",
