@@ -29,12 +29,14 @@ ui <- function(request) {
         br(),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://cran.r-project.org/package=bayesDP",
-                        "View help files and download the package from CRAN")),
-        br(),
+                        "View help files and download the package from CRAN",
+                        style = "color:black;")),
+        hr(),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://github.com/balcomes/bayesDP",
-                        "Development version of bayesDP")),
-        br(),
+                        "Development version of bayesDP",
+                        style = "color:black;")),
+        hr(),
         bookmarkButton(),
         br(),
         br(),
@@ -76,7 +78,57 @@ ui <- function(request) {
                 color: black;
                 padding: 10px;
                 background-color: #408EBA;
-                z-index: 1000;")
+                z-index: 1000;",
+                tags$a(HTML("Contact Authors:  "),style = "
+                          float:left;
+                          height: 100%;
+                          display: flex;
+                          color: black;
+                          flex-direction: column;
+                          justify-content: center;
+                          margin-right: 20px;
+                          padding: 0 20px;
+                          margin-bottom: 10px;"),
+                tags$a(href="mailto:sbalcome@mdic.org",
+                          "Shawn Balcome",
+                          target="_top",
+                          style = "
+                          float:left;
+                          height: 100%;
+                          display: flex;
+                          color: black;
+                          flex-direction: column;
+                          justify-content: center;
+                          margin-right: 20px;
+                          padding: 0 20px;
+                          margin-bottom: 10px;"),
+                tags$a(href="mailto:donald.r.musgrove@medtronic.com",
+                       "Donnie Musgrove",
+                       target="_top",
+                       style = "
+                       float:left;
+                       height: 100%;
+                       display: flex;
+                       color: black;
+                       flex-direction: column;
+                       justify-content: center;
+                       margin-right: 20px;
+                       padding: 0 20px;
+                       margin-bottom: 10px;"),
+                tags$a(href="mailto:tarek.d.haddad@medtronic.com",
+                       "Tarek Haddad",
+                       target="_top",
+                       style = "
+                          float:left;
+                          height: 100%;
+                          display: flex;
+                          color: black;
+                          flex-direction: column;
+                          justify-content: center;
+                          margin-right: 20px;
+                          padding: 0 20px;
+                          margin-bottom: 10px;")
+    )
   )
 }
 
