@@ -3,9 +3,9 @@ title: bayesDP
 account: mdic
 server: shinyapps.io
 appId: 176536
-bundleId: 879493
+bundleId: 890788
 url: https://mdic.shinyapps.io/bayesdp/
-when: 1498210632.19021
+when: 1499127629.68248
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: .RData|bayesDP-report.html|gen.R|my-report.html|README.md|report.html|toggle.R|urltest.R|randomwalk/app.R|randomwalk/d3template.html|randomwalk/my-report..txt|testing/app.R
+ignoredFiles: .RData|bayesDP-report.html|gap.R|gen.R|my-report.html|README.md|report.html|toggle.R|urltest.R|randomwalk/app.R|randomwalk/d3template.html|randomwalk/my-report..txt|testing/app.R

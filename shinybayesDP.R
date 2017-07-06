@@ -51,7 +51,6 @@ ui <- function(request) {
         insert,
         HTML("<br><br><br>"),
         tags$style(".skin-blue .sidebar a { color: #444; }"),
-        tags$style(".skin-blue .sidebar a { color: #444; }"),
         tags$style(".skin-blue .main-sidebar { background-color: #8dbcd8; }")
       ),
       dashboardBody(
@@ -63,19 +62,21 @@ ui <- function(request) {
           tags$style(type = "text/css",
                      ".shiny-output-error { visibility: hidden; }",
                      ".shiny-output-error:before { visibility: hidden; }"),
-          box(width = "100%", uiOutput("plottabs"))),
+          box(width = "100%", uiOutput("plottabs"))
+        ),
         hr()
       )
+      
     ),
-    tags$footer(style =
-                 "position:absolute;
-                  bottom:0;
-                  width:100%;
-                  height:25px;
-                  color: black;
-                  padding: 10px;
-                  background-color: #408EBA;
-                  z-index: 1000;")
+    tags$footer(style = "
+                position:fixed;
+                bottom:0;
+                width:100%;
+                height:25px;
+                color: black;
+                padding: 10px;
+                background-color: #408EBA;
+                z-index: 1000;")
   )
 }
 
