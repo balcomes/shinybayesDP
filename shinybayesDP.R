@@ -552,28 +552,44 @@ server <- function(input, output, enableBookmarking = "url"){
   output$vig <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpnormal"){
-        mdout <- do.call(includeHTML,
-                         list(system.file("doc",
-                                          "bdpnormal-vignette.html",
-                                          package="bayesDP")))
+        vigpath <- system.file("doc", "bdpnormal-vignette.html", package="bayesDP")
+        vig <- readLines(vigpath)
+        stripped <-  vig[!grepl('<link href="data:text/css;charset=utf-8',vig)]
+        tmp <- tempfile()
+        con <- file(tmp, "w")
+        writeLines(stripped, con = con)
+        mdout <- do.call(includeHTML, list(tmp))
+        close(con)
       }
       if(input$func == "bdpbinomial"){
-        mdout <- do.call(includeHTML,
-                         list(system.file("doc",
-                                          "bdpbinomial-vignette.html",
-                                          package="bayesDP")))
+        vigpath <- system.file("doc", "bdpbinomial-vignette.html", package="bayesDP")
+        vig <- readLines(vigpath)
+        stripped <-  vig[!grepl('<link href="data:text/css;charset=utf-8',vig)]
+        tmp <- tempfile()
+        con <- file(tmp, "w")
+        writeLines(stripped, con = con)
+        mdout <- do.call(includeHTML, list(tmp))
+        close(con)
       }
       if(input$func == "bdpsurvival"){
-        mdout <- do.call(includeHTML,
-                         list(system.file("doc",
-                                          "bdpsurvival-vignette.html",
-                                          package="bayesDP")))
+        vigpath <- system.file("doc", "bdpsurvival-vignette.html", package="bayesDP")
+        vig <- readLines(vigpath)
+        stripped <-  vig[!grepl('<link href="data:text/css;charset=utf-8',vig)]
+        tmp <- tempfile()
+        con <- file(tmp, "w")
+        writeLines(stripped, con = con)
+        mdout <- do.call(includeHTML, list(tmp))
+        close(con)
       }
       if(input$func == "bdpregression"){
-        mdout <- do.call(includeHTML,
-                         list(system.file("doc",
-                                          "bdpregression-vignette.html",
-                                          package="bayesDP")))
+        vigpath <- system.file("doc", "bdpregression-vignette.html", package="bayesDP")
+        vig <- readLines(vigpath)
+        stripped <-  vig[!grepl('<link href="data:text/css;charset=utf-8',vig)]
+        tmp <- tempfile()
+        con <- file(tmp, "w")
+        writeLines(stripped, con = con)
+        mdout <- do.call(includeHTML, list(tmp))
+        close(con)
       }
       mdout
     }
