@@ -33,7 +33,7 @@ ui <- function(request) {
                         style = "color:black;")),
         hr(),
         tags$div(class = "header", checked = NA,
-                 tags$a(href = "https://github.com/balcomes/bayesDP",
+                 tags$a(href = "https://github.com/donaldmusgrove/bayesDP",
                         "Development version of bayesDP",
                         style = "color:black;")),
         hr(),
@@ -603,25 +603,25 @@ server <- function(input, output, enableBookmarking = "url"){
   output$src <- renderUI({
     if(is.null(input$funccheck) || input$funccheck == FALSE){
       if(input$func == "bdpnormal"){
-        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpnormal.R",
+        rend <- highlight("https://raw.githubusercontent.com/donaldmusgrove/bayesDP/master/R/bdpnormal.R",
                           output = stdout(), renderer = renderer_html())
         rend <- rend[grep("#'", rend, invert = TRUE)]
         mdout <- do.call(HTML, list(rend))
       }
       if(input$func == "bdpbinomial"){
-        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpbinomial.R",
+        rend <- highlight("https://raw.githubusercontent.com/donaldmusgrove/bayesDP/master/R/bdpbinomial.R",
                           output = stdout(), renderer = renderer_html())
         rend <- rend[grep("#'", rend, invert = TRUE)]
         mdout <- do.call(HTML, list(rend))
       }
       if(input$func == "bdpsurvival"){
-        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpsurvival.R",
+        rend <- highlight("https://raw.githubusercontent.com/donaldmusgrove/bayesDP/master/R/bdpsurvival.R",
                           output = stdout(), renderer = renderer_html())
         rend <- rend[grep("#'", rend, invert = TRUE)]
         mdout <- do.call(HTML, list(rend))
       }
       if(input$func == "bdpregression"){
-        rend <- highlight("https://raw.githubusercontent.com/balcomes/bayesDP/master/R/bdpregression.R",
+        rend <- highlight("https://raw.githubusercontent.com/donaldmusgrove/bayesDP/master/R/bdpregression.R",
                           output = stdout(), renderer = renderer_html())
         rend <- rend[grep("#'", rend, invert = TRUE)]
         mdout <- do.call(HTML, list(rend))
