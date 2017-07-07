@@ -591,7 +591,7 @@ server <- function(input, output, enableBookmarking = "url"){
         mdout <- do.call(includeHTML, list(tmp))
         close(con)
       }
-      mdout
+      withMathJax(mdout)
     }
   })
   
