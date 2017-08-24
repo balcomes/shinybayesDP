@@ -18,14 +18,19 @@ ui <- function(request) {
   
   insert <- list()
   for(i in 1:length(ch)){
-    insert <- list(insert,hr(),la[i],br(),ch[i],br(),tx[i],df[i])
+    insert <- list(insert,la[i],br(),ch[i],br(),tx[i],df[i])
   }
   
   tagList(
+    shinytheme("yeti"),
     dashboardPage(title = "bayesDP",
       dashboardHeader(title = "bayesDP"),
       dashboardSidebar(
         tags$head(tags$style(HTML(".sidebar{height:100vh;overflow-y:auto;}"))),
+        tags$head(
+          tags$link(rel = "stylesheet",
+                    type = "text/css",
+                    href = "https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.css")),
         br(),
         tags$div(class = "header", checked = NA,
                  tags$a(href = "https://cran.r-project.org/package=bayesDP",
@@ -59,6 +64,10 @@ ui <- function(request) {
         fluidPage(
           tags$head(tags$style(HTML("body {width: 100% !important;
                                     max-width: 100% !important;}"))),
+          tags$head(
+            tags$link(rel = "stylesheet",
+                      type = "text/css",
+                      href = "https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/yeti/bootstrap.css")),
           tags$script('$(document).on("keypress", function (e) {
                       Shiny.onInputChange("secret", e.which);});'),
           tags$style(type = "text/css",
